@@ -23,7 +23,7 @@
 #define WATER_PARALLAX
 
 #define CLOUDS
-  #define CLOUD_STYLE 2 //[1 2]
+  #define CLOUD_STYLE 2 
   #define CLOUD_HEIGHT_2D   512  // [384 512 640 768] For cloud style 1
   #define CLOUD_COVERAGE_2D 0.5
   #define CLOUD_SPEED_2D    1.00 // [0.25 0.50 1.00 2.00 4.00] For cloud style 1
@@ -58,7 +58,7 @@
 #define AVERAGE_EXPOSURE_STRENGTH 1.15 //[0.5 0.75 1.0 1.25 1.5]
 
 #define FILM_GRAIN
-	#define FILM_GRAIN_STRENGTH 0.2 //[0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.1]
+	#define FILM_GRAIN_STRENGTH 0.4 //[0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.1]
 
 //#define EDGE_SHARPENING
 
