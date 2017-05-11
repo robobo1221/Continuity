@@ -142,7 +142,7 @@ float distanceStep(vec4 sPos) {
         depthSample4.z-texture2DLod(shadowtex0, depthSample4.xy, 5.0).x,
         0.
     );
-  return occluderDistance * shadowMapResolution * 0.2;
+  return occluderDistance * shadowMapResolution * 0.1;
 }
 
 float shadowStep(sampler2D shadow, vec3 sPos, float mult) {
