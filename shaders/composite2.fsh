@@ -285,7 +285,14 @@ vec3 getStars(vec3 color, vec3 fpos) {
 		vec3 color = vec3(0.0);
 
 		if (isEyeInWater < 0.5) {
-			color = getSky(dir, true);
+			#if SKY_MODEL == 1
+				color = getSky(dir, true);
+			#endif
+
+			#if SKY_MODEL == 2
+				color = CalculateAtmosphericSky(toWorldSpace(dir), land) * 0.1;
+			#endif
+			
 			color = getStars(color, dir);
 			#ifdef CLOUDS
 				color = getClouds(color, dir);
@@ -432,7 +439,14 @@ void main() {
 	if (isnan(color)) toLinear(texture2D(colortex0, texcoord.st).rgb);
 
 	if (land < 0.5) {
-		color = getSky(normalize(fpos2), true);
+		#if SKY_MODEL == 1
+			color = getSky(normalize(fpos2), true);
+		#endif
+
+		#if SKY_MODEL == 2
+			color = CalculateAtmosphericSky(toWorldSpace(fpos2), land) * 0.1;
+		#endif
+		
 		color = getStars(color, fpos2);
 		#ifdef CLOUDS
 			color = getClouds(color, fpos2);
