@@ -1,4 +1,3 @@
-I'm # Continuity
 Continuity Shader for Minecraft.
 You may edit Continuity for personal or public use, but public use requires permission and explicit credit.
 You may not take Continuity and rename it, claiming it as your own.
