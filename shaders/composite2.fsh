@@ -116,14 +116,14 @@ vec3 getStars(vec3 color, vec3 fpos) {
 
 	vec3 starCoord  = wpos * (50.0 / (wpos.y));
 			 starCoord *= mix(1.0, horizon, 1.0 - horizon);
-	vec2 coord			= (starCoord.xz) * 0.01;
+	vec2 coord			= (starCoord.xz) * 0.006;
 
 	float noise  = texture2D(noisetex, fract(coord.xy/2.0)).r;
 				noise += texture2D(noisetex, fract(coord.xy)).r/2.0;
 
 	float star = max(noise-1.3,0.0);
 
-	return color + star * 0.8 * horizon * sun * moonFade;
+	return color + star * 9.8 * horizon * sun * moonFade;
 }
 
 #ifdef CLOUDS
