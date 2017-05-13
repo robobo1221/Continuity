@@ -95,11 +95,14 @@ void main() {
 
 	material = 0.0;
 
-  lightmapCoord = gl_TextureMatrix[1] * gl_MultiTexCoord1;
+  	lightmapCoord = vec4(0.0);
+	#ifndef gbuffers_basic
+  	lightmapCoord = gl_TextureMatrix[1] * gl_MultiTexCoord1;
+	#endif
 
 	texcoord = gl_MultiTexCoord0;
 
-  color = gl_Color;
+  	color = gl_Color;
 
 	#if defined gbuffers_terrain && defined WAVING_TERRAIN
 		vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
