@@ -107,7 +107,7 @@ vec3 getSky(in vec3 viewPos, bool doSun)
 
 	if (doSun) {
   	sky = mix(sky, sunColor  * 1000.0, sun  * horizon);
-  	sky = mix(sky, moonColor * 1000.0, moon * horizon);
+  	sky = mix(sky, moonColor * 10000.0, moon * horizon);
 	}
 
 	return powf(sky, CONTRAST) * BRIGHTNESS * (1.0 - rainStrength * 0.7);
