@@ -144,7 +144,7 @@ vec3 getStars(vec3 color, vec3 fpos) {
 
 		float noise = mix(mix(a, b, v.x), mix(c, d, v.x), v.y);
 
-		vec2 z = 30.*g*f*f;
+		vec2 z = 75.*g*f*f;
 
 		vec2 derivatives = z * (vec2(b, c) + (a - b - c + d) * v.yx - a);
 
@@ -172,7 +172,7 @@ vec3 getStars(vec3 color, vec3 fpos) {
 	}
 
 	vec3 getClouds(vec3 color, vec3 fpos) {
-		float cloudHeight = 450.0 + bayer(gl_FragCoord.st) * 10.0;
+		float cloudHeight = 400.0 + bayer(gl_FragCoord.st) * 10.0;
 		vec3 wpos = normalize(toWorldSpace(fpos));
 
 		vec3 cloudPosition = wpos * ((cloudHeight) / wpos.y - wpos.y);
@@ -182,41 +182,43 @@ vec3 getStars(vec3 color, vec3 fpos) {
 		float phase    = phaseCloud(dot(lightVec, normalize(fpos)));
 		float aBeer		 = pow(1.0 + dot(downVec, normalize(fpos)), 2.0);
 		float movement = frameTimeCounter * 0.01;
-		float coverage = mix(0.45, 0.0, rainStrength);
+		float coverage = mix(0.39, 0.0, rainStrength);
 
 		vec4 noise;
-		noise   = normalNoise(coord * vec2(7.3, 0.8) + movement);
-		coord  *= mat2(1.0,1.2,-1.2,2.0);
-		noise  += normalNoise(coord * vec2(2.2, 0.8) + movement)*0.5;
-		coord  *= mat2(2.0,1.2,-1.2,2.0);
-		noise  += normalNoise(coord * vec2(2.1, 0.8) + movement)*0.25;
-		coord  *= mat2(2.0,1.2,-1.2,2.0);
-		noise  += normalNoise(coord * vec2(0.5, 0.8) + movement)*0.125;
-		coord  *= mat2(2.0,1.2,-1.2,2.0);
-		noise  += normalNoise(coord * vec2(2.6, 0.8) + movement)*.0625;
-		coord  *= mat2(2.0,1.2,-1.2,2.0);
-		noise  += normalNoise(coord * vec2(1.2, 0.8) + movement)*.03125;
-		coord  *= mat2(2.0,1.2,-1.2,2.0);
-		noise  += normalNoise(coord * vec2(3.4, 0.8) + movement)*.015625;
-	  coord  *= mat2(2.0,1.2,-1.2,2.0);
-		noise  += normalNoise(coord * vec2(3.4, 0.8) + movement)*.038125;
+		noise		= normalNoise(coord * vec2(2.3, 1.8) + movement);
+		coord	 *= mat2(3.2,0.2,-0.2,2.0);
+		noise  += normalNoise(coord * vec2(2.5, 2.3) + movement)*0.6;
+		coord  *= mat2(1.0,0.2,-0.2,2.0);
+		noise  += normalNoise(coord * vec2(0.3, 0.5) + movement)*0.5;
+		coord  *= mat2(3.0,1.2,-1.2,3.0);
+		noise  += normalNoise(coord * vec2(0.6, 1.0) + movement)*0.25;
+		coord  *= mat2(1.2,0.7,-0.7,1.2);
+		noise  += normalNoise(coord * vec2(1.5, 2.0) + movement)*0.125;
+		coord  *= mat2(3.0,0.5,-0.5,3.0);
+		noise  += normalNoise(coord * vec2(1.5, 2.1) + movement)*.0625;
+		coord  *= mat2(0.5,0.2,-0.2,0.5);
+		noise  += normalNoise(coord * vec2(0.1, 0.2) + movement)*.03125;
+		coord  *= mat2(4.0,0.3,-0.3,4.0);
+		noise  += normalNoise(coord * vec2(3.4, 3.0) + movement)*.015625;
+	  coord  *= mat2(0.2,4.2,-4.2,0.2);
+		noise  += normalNoise(coord * vec2(0.2, 0.1) + movement)*.038125;
 		noise  += normalNoise(coord * vec2(3.4, 0.8) + movement)*.000125;
 
 
-		noise.a  *= 0.45;
+		noise.a  *= 0.32;
 		noise.xyz = normalize(noise.xyz);
 
 		noise.a = saturate(noise.a - coverage);
 
-		vec4 sunPos = vec4(2.0,0.5,0.5,0.5);
+		vec4 sunPos = vec4(6.0,3.5,0.8,0.3);
 
 		float cloudsSun	 = mDot(noise.rgb, sunPos.rgb);
 
-		vec3 cloudColor = lightColor * 8.0 * (1.0 + phase * 0.0);
+		vec3 cloudColor = lightColor * 11.0 * (0.8 + phase * 0.6);
 
-		vec3 clouds = mix(vec3(0.055, 0.055, 0.085) * (lightColor * 0.2) * 2.62, cloudColor, pow(cloudsSun, 0.8) * pow(1.01 - noise.a, 30.0));
+		vec3 clouds = mix(vec3(0.002, 0.007, 0.02) * (lightColor * 0.4) * 3.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.01 - noise.a, 37.0));
 
-		return mix(color, clouds, saturate(smoothstep(0.,1.0,noise.a*4.) * horizon * 0.8));
+		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 0.8));
 	}
 #endif
 
