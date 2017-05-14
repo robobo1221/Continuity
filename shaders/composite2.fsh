@@ -126,6 +126,66 @@ vec3 getStars(vec3 color, vec3 fpos) {
 	return color + star * 9.8 * horizon * sun * moonFade;
 }
 
+
+
+float noise( in vec2 p ) {
+    vec2 i = floor( p );
+    vec2 f = fract( p );
+
+    f = 1. - f*f;
+    f = 1. - f*f;
+
+    float a=hash12(i);
+    float b=hash12(i + vec2(1.,0.) );
+    float c=hash12(i + vec2(0.,1.) );
+    float d=hash12(i + vec2(1.,1.) );
+
+    return 2.*mix(
+        mix( a, b, f.x),
+        mix( c, d, f.x),
+    f.y)-1.;
+}
+
+float wave(vec2 p) {
+    p += noise2(p);
+    return abs(noise(p));
+}
+
+float waveH(vec2 p) {
+    float a = .04;
+    float t = frameTimeCounter * .0;
+    p = (p * rotate(1.0));
+
+    float h = (wave(p+t)+wave(p-t)) * a;
+    p *= mat2(3.2,1.2,-1.2,3.2);
+    a *= .2;
+    h += (wave(p+t)+wave(p-t)) * a;
+    p *= mat2(3.2,1.2,-1.2,3.2);
+    a *= .2;
+    h += (wave(p+t)+wave(p-t)) * a;
+
+    return (h) * 1.0;
+}
+
+vec3 getGalaxy(vec3 color, vec3 fpos) {
+	vec3 wpos = normalize(toWorldSpace(fpos));
+	vec3 axisVector = vec3(0.2,0.5,-0.8);
+
+	float factor = (1.0 - (mDot(wpos, normalize(axisVector)) + max(-dot(wpos, normalize(axisVector)), 0.0)));
+	float horizon = pow(mDot(normalize(fpos), upVec), 1.0);
+
+	vec3 coord  = wpos * (50.0 / (wpos.y));
+			 coord *= mix(1.0, horizon, 1.0 - horizon);
+
+	vec3 noise  = vec3(pow(1.0 - waveH(coord.xz * 0.2), 5.0)) * 0.2;
+			 noise += pow(waveH(coord.xz * 0.05), 1.0) * 2.0;
+			 noise += pow(waveH(coord.xz * 0.01), 1.0) * 2.0;
+
+	noise = max(noise * vec3(1.0, 0.2, 0.8) - 0.3,0.0);
+
+	return color + noise * pow(factor, 10.0) * horizon * 0.05 * moonFade;
+}
+
 #ifdef CLOUDS
 	vec4 normalNoise(vec2 x) {
 		vec2 p = floor(x);
@@ -451,6 +511,8 @@ void main() {
 		#endif
 		
 		color = getStars(color, fpos2);
+		color = getGalaxy(color, fpos2);
+		
 		#ifdef CLOUDS
 			color = getClouds(color, fpos2);
 		#endif
