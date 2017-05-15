@@ -85,16 +85,16 @@ void refractTexcoord(inout vec2 coord, in vec3 fpos1, in vec3 fpos2) {
 }
 
 float getAtmosphere() {
-	float indoors = 1.0 - saturate((-eyeBrightnessSmooth.y + 230) / 100.0);
-	float thickness = mix(pow(dot(sunVec, downVec) * 0.5 + 0.5, 3.0) * 0.001, 0.00008, rainStrength) * indoors;
+	float thickness = mix(pow(dot(sunVec, downVec) * 0.5 + 0.5, 3.0) * 0.001, 0.00008, rainStrength);
 	if (isEyeInWater > 0.5) thickness = 0.00005;
 	return thickness;
 }
 
 void doFog(inout vec3 color, in vec3 fpos) {
+	float indoors = 1.0 - saturate((-eyeBrightnessSmooth.y + 230) / 100.0);
 	float fogFactor  = length(fpos);
 	float thickness  = getAtmosphere();
-				fogFactor *= thickness;
+				fogFactor *= thickness * indoors;
 				fogFactor  = fogFactor / (1.0 + fogFactor * (1.0 + 100.0 * rainStrength));
 
 	vec3 fogColor = YxyToRGB(calculateZenithLuminanceYxy(turbidity, acos(mDot(sunVec, upVec)))) * lightColor;
@@ -479,7 +479,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 		float LdotF			= dot(lightVec, normalize(fpos));
 		float phase			= phaseMie(LdotF) + phaseRayleigh(LdotF);
-		float thickness = getAtmosphere() * 20.0;
+		float thickness = getAtmosphere() * 20.0 * (1.0 + rainStrength * 10.0);
 
 	  color.rgb += volumetricLightSample * phase * lightColor * thickness;
 	}
