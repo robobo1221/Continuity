@@ -270,13 +270,13 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 		noise.a = saturate(noise.a - coverage);
 
-		vec4 sunPos = vec4(6.0,3.5,0.8,0.3);
+		vec4 sunPos = normalize(gbufferModelViewInverse * vec4(shadowLightPosition, 0.0));
 
 		float cloudsSun	 = mDot(noise.rgb, sunPos.rgb);
 
 		vec3 cloudColor = lightColor * 11.0 * (0.8 + phase * 0.6);
 
-		vec3 clouds = mix(vec3(0.002, 0.01, 0.015) * (lightColor * 0.4) * 3.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.02 - noise.a, 37.0));
+		vec3 clouds = mix(vec3(0.007, 0.01, 0.02) * (lightColor) * 3.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.02 - noise.a, 37.0));
 
 		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 1.8));
 	}
