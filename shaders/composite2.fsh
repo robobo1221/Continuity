@@ -114,12 +114,12 @@ vec3 getStars(vec3 color, vec3 fpos) {
 	float horizon = pow(mDot(normalize(fpos), upVec), 0.8);
 	float sun			= smoothstep(0.04, 0.05, acos(mDot(moonVec, normalize(fpos))));
 
-	vec3 starCoord  = wpos * (50.0 / (wpos.y));
+	vec3 starCoord  = wpos * (75.0 / (wpos.y));
 			 starCoord *= mix(1.0, horizon, 1.0 - horizon);
-	vec2 coord			= (starCoord.xz) * 0.006;
+	vec2 coord			= (starCoord.xz) * 0.003;
 
-	float noise  = texture2D(noisetex, fract(coord.xy/2.0)).r;
-				noise += texture2D(noisetex, fract(coord.xy)).r/2.0;
+	float noise  = texture2D(noisetex, fract(coord.xy/2.6)).r;
+				noise += texture2D(noisetex, fract(coord.xy)).r/2.6;
 
 	float star = max(noise-1.3,0.0);
 

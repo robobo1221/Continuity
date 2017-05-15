@@ -174,9 +174,9 @@ vec3 burgess(vec3 x) {
     b = vec3(0.5, 0.4, 0.4);    //Contrast
     c = vec3(15.0, 15.0, 15.0);    //Vibrance
     d = vec3(0.4, 0.5, 0.6);    //Gamma
-    e = vec3(0.01, 0.03, 0.05);    //Lift
+    e = vec3(0.00, 0.00, 0.00);    //Lift
     f = vec3(1.0, 1.0, 1.0);    //Highlights
-    g = 1.0;                    //Saturation
+    g = 0.8;                    //Saturation
 #endif
 
 #if TONEMAP_PRESET == 5
