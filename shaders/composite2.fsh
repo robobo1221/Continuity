@@ -241,7 +241,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		float horizon  = pow(mDot(upVec, normalize(fpos)), 0.8);
 		float phase    = phaseCloud(dot(lightVec, normalize(fpos)));
 		float aBeer		 = pow(1.0 + dot(downVec, normalize(fpos)), 2.0);
-		float movement = frameTimeCounter * 0.01;
+		float movement = frameTimeCounter * 0.03;
 		float coverage = mix(0.39, 0.0, rainStrength);
 
 		vec4 noise;
@@ -257,7 +257,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		coord  *= mat2(3.0,0.5,-0.5,3.0);
 		noise  += normalNoise(coord * vec2(1.5, 2.1) + movement)*.0625;
 		coord  *= mat2(0.5,0.2,-0.2,0.5);
-		noise  += normalNoise(coord * vec2(0.1, 0.2) + movement)*.03125;
+		noise  += normalNoise(coord * vec2(0.1, 0.2) + movement)*.13125;
 		coord  *= mat2(4.0,0.3,-0.3,4.0);
 		noise  += normalNoise(coord * vec2(3.4, 3.0) + movement)*.015625;
 	  coord  *= mat2(0.2,4.2,-4.2,0.2);
@@ -265,7 +265,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		noise  += normalNoise(coord * vec2(3.4, 0.8) + movement)*.031125;
 
 
-		noise.a  *= 0.36;
+		noise.a  *= 0.25;
 		noise.xyz = normalize(noise.xyz);
 
 		noise.a = saturate(noise.a - coverage);
@@ -276,9 +276,9 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 		vec3 cloudColor = lightColor * 11.0 * (0.8 + phase * 0.6);
 
-		vec3 clouds = mix(vec3(0.007, 0.01, 0.02) * (lightColor) * 6.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.02 - noise.a, 37.0));
+		vec3 clouds = mix(vec3(0.007, 0.01, 0.015) * (lightColor) * 6.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.02 - noise.a, 37.0));
 
-		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 1.8));
+		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 2.8));
 	}
 #endif
 
@@ -317,7 +317,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
     float depth0 = clipPosition.z;
     float depth1;
 
-		float dither = hash12(gl_FragCoord.st) * 0.0;
+		float dither = hash12(gl_FragCoord.st);
 
     for (int i = 1; i < int(R_QUALITY+1); i++) {
       position1 = position0;
