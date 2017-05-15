@@ -247,7 +247,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		vec4 noise;
 		noise		= normalNoise(coord * vec2(2.3, 1.8) + movement);
 		coord	 *= mat2(3.2,0.2,-0.2,2.0);
-		noise  += normalNoise(coord * vec2(2.5, 2.3) + movement)*0.6;
+		noise  += normalNoise(coord * vec2(2.5, 2.3) + movement)*0.9;
 		coord  *= mat2(1.0,0.2,-0.2,2.0);
 		noise  += normalNoise(coord * vec2(0.3, 0.5) + movement)*0.5;
 		coord  *= mat2(3.0,1.2,-1.2,3.0);
@@ -262,7 +262,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		noise  += normalNoise(coord * vec2(3.4, 3.0) + movement)*.015625;
 	  coord  *= mat2(0.2,4.2,-4.2,0.2);
 		noise  += normalNoise(coord * vec2(0.2, 0.1) + movement)*.038125;
-		noise  += normalNoise(coord * vec2(3.4, 0.8) + movement)*.000125;
+		noise  += normalNoise(coord * vec2(3.4, 0.8) + movement)*.031125;
 
 
 		noise.a  *= 0.32;
@@ -278,7 +278,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 		vec3 clouds = mix(vec3(0.002, 0.007, 0.02) * (lightColor * 0.4) * 3.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.01 - noise.a, 37.0));
 
-		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 0.8));
+		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 1.8));
 	}
 #endif
 
@@ -397,7 +397,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 					float F0 = mix(0.02, 0.05, water);
 					float fresnel = F0 + (1. - F0) * pow(1.-VoH,5.);
 
-					color +=  (fresnel * 3.5) * G(NoV, NoL, alpha) * rayTrace(l, p3, clip3, skyLightmap)  * VoH / (NoH * NoV);
+					color +=  (fresnel * 6.5) * G(NoV, NoL, alpha) * rayTrace(l, p3, clip3, skyLightmap)  * VoH / (NoH * NoV);
 			}
 
 			return color / float(steps);
