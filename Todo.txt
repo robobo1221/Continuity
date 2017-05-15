@@ -9,9 +9,11 @@
 ---Medium Priority---
 -More tonemapping presets/ more tonemapping effects
 -Fixes for hands with Motion blur
-
+-Further weather shading
 
 
 
 
 ---Low Priority---
+-Further underwater shading
+-More accurate caustics/Absorption
