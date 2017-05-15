@@ -265,7 +265,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		noise  += normalNoise(coord * vec2(3.4, 0.8) + movement)*.031125;
 
 
-		noise.a  *= 0.42;
+		noise.a  *= 0.36;
 		noise.xyz = normalize(noise.xyz);
 
 		noise.a = saturate(noise.a - coverage);
@@ -276,7 +276,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 		vec3 cloudColor = lightColor * 11.0 * (0.8 + phase * 0.6);
 
-		vec3 clouds = mix(vec3(0.007, 0.01, 0.02) * (lightColor) * 3.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.02 - noise.a, 37.0));
+		vec3 clouds = mix(vec3(0.007, 0.01, 0.02) * (lightColor) * 6.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.02 - noise.a, 37.0));
 
 		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 1.8));
 	}
