@@ -28,6 +28,7 @@ uniform float aspectRatio;
 uniform float viewWidth;
 uniform float viewHeight;
 uniform float frameTimeCounter;
+uniform float rainStrength;
 uniform int isEyeInWater;
 
 #include "lib/noise.glsl"
@@ -201,6 +202,7 @@ vec3 burgess(vec3 x) {
 #endif
 
   e *= smoothstep(0.1, -0.1, dot(normalize(-sunPosition), normalize(upPosition)));
+  g *= 1.0 - rainStrength * 0.5;
 
   vec3 retColor = curve(x, a, b, c, d, e);
 
