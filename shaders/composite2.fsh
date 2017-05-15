@@ -317,7 +317,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
     float depth0 = clipPosition.z;
     float depth1;
 
-		float dither = hash12(gl_FragCoord.st);
+		float dither = hash12(gl_FragCoord.st) * 0.0;
 
     for (int i = 1; i < int(R_QUALITY+1); i++) {
       position1 = position0;
