@@ -1,10 +1,14 @@
 ---High Priority---
-
+-Global Illumination
+-Fixes for Sky model 2
+-Remove support for certain GPUs
 
 
 
 
 ---Medium Priority---
+-More tonemapping presets/ more tonemapping effects
+-Fixes for hands with Motion blur
 
 
 
