@@ -65,4 +65,4 @@
 
 //#define EDGE_SHARPENING
 
-#define TONEMAP_PRESET 1 //[1 2 3 4 5 6]
+#define TONEMAP_PRESET 5 //[1 2 3 4 5 6]
