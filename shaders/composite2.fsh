@@ -13,7 +13,6 @@ uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D colortex3;
-uniform sampler2D colortex4;
 uniform sampler2D colortex5;
 
 uniform sampler2D depthtex0;
@@ -355,13 +354,13 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 			#if SKY_MODEL == 2
 				color = CalculateAtmosphericSky(toWorldSpace(dir), land) * 0.1;
 			#endif
-			
+
 			color = getStars(color, dir);
 			#ifdef CLOUDS
 				color = getClouds(color, dir);
 			#endif
 		}
-		
+
 		return color * skyLightmap;
 	}
 
@@ -420,8 +419,8 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 			vec3 combinedNormals = normal1;
 			if(transparent > 0.5) combinedNormals = normal2;
 
-			vec3 specular = texture2D(colortex4, texcoord.st).rgb;
-			float glossy    = mix(specular.r * 0.2 * (1.0 - emitter), 0.8, transparent);
+			vec3 specular = decodeColor(aux1.a);
+			float glossy    = mix(specular.r * 0.1 * (1.0 - emitter), 0.8, transparent);
 			float metal   = specular.g;
 			float roughness = specular.r * (1.0 - transparent) * 0.1;
 
@@ -509,10 +508,10 @@ void main() {
 		#if SKY_MODEL == 2
 			color = CalculateAtmosphericSky(toWorldSpace(fpos2), land) * 0.1;
 		#endif
-		
+
 		color = getStars(color, fpos2);
 		color = getGalaxy(color, fpos2);
-		
+
 		#ifdef CLOUDS
 			color = getClouds(color, fpos2);
 		#endif
