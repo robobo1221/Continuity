@@ -13,6 +13,7 @@ uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D colortex3;
+uniform sampler2D colortex4;
 uniform sampler2D colortex5;
 
 uniform sampler2D depthtex0;
@@ -113,12 +114,12 @@ vec3 getStars(vec3 color, vec3 fpos) {
 	float horizon = pow(mDot(normalize(fpos), upVec), 0.8);
 	float sun			= smoothstep(0.04, 0.05, acos(mDot(moonVec, normalize(fpos))));
 
-	vec3 starCoord  = wpos * (75.0 / (wpos.y));
+	vec3 starCoord  = wpos * (50.0 / (wpos.y));
 			 starCoord *= mix(1.0, horizon, 1.0 - horizon);
-	vec2 coord			= (starCoord.xz) * 0.003;
+	vec2 coord			= (starCoord.xz) * 0.006;
 
-	float noise  = texture2D(noisetex, fract(coord.xy/2.6)).r;
-				noise += texture2D(noisetex, fract(coord.xy)).r/2.6;
+	float noise  = texture2D(noisetex, fract(coord.xy/2.0)).r;
+				noise += texture2D(noisetex, fract(coord.xy)).r/2.0;
 
 	float star = max(noise-1.3,0.0);
 
@@ -419,7 +420,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 			vec3 combinedNormals = normal1;
 			if(transparent > 0.5) combinedNormals = normal2;
 
-			vec3 specular = decodeColor(aux1.a);
+			vec3 specular = texture2D(colortex4, texcoord.st).rgb;
 			float glossy    = mix(specular.r * 0.2 * (1.0 - emitter), 0.8, transparent);
 			float metal   = specular.g;
 			float roughness = specular.r * (1.0 - transparent) * 0.1;
