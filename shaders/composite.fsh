@@ -34,6 +34,7 @@ varying vec4 texcoord;
 uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
+uniform sampler2D colortex4;
 
 uniform sampler2D depthtex0;
 uniform sampler2D depthtex1;
@@ -250,6 +251,8 @@ void main() {
 	vec3 fpos2 = toScreenSpace(texcoord.st, depth2);
 
 	vec3 color = toLinear(texture2D(colortex0, texcoord.st).rgb);
+	
+	vec3 specular = texture2D(colortex4, texcoord.st).rgb;
 
 
 	float ao = 1.0;
@@ -275,8 +278,9 @@ void main() {
   if (isnan(color)) color = vec3(0.0);
 
 
-/* DRAWBUFFERS:05 */
+/* DRAWBUFFERS:015 */
 
   gl_FragData[0] = vec4(toGamma(color.rgb), getShadows(fpos2));
-  gl_FragData[1] = vec4(toGamma(gi), ao);
+  gl_FragData[1] = vec4(aux1.rgb, encodeColor(specular));
+  gl_FragData[2] = vec4(toGamma(gi), ao);
 }
