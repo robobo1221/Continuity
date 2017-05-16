@@ -2,6 +2,10 @@
 
 #define WAVING_TERRAIN
 
+#define POM
+  #define POM_MAP_RES 64. //[16. 32. 64. 128. 256. 512.]
+  #define POM_DEPTH 4. //actually inverse POM depth
+
 #define VPSS
 #define SSAO
   #define SSAO_METHOD 1 //[1 2]
