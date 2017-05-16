@@ -10,6 +10,11 @@ varying vec3 tangent;
 varying vec3 binormal;
 varying mat3 tbnMatrix;
 
+#if defined gbuffers_terrain && defined POM
+	varying vec3 modelView;
+	varying vec3 p3;
+#endif
+
 varying float material;
 
 #if defined gbuffers_terrain && defined WAVING_TERRAIN
@@ -56,9 +61,9 @@ attribute vec4 at_tangent;
 	}
 
 	void displaceVertex(inout vec4 position, in float lightmap) {
-		float istopv = gl_MultiTexCoord0.t < mc_midTexCoord.t ? 1.0 : 0.0;
+		bool istopv = gl_MultiTexCoord0.t < mc_midTexCoord.t;
 
-		float underCover = clamp(pow(lightmap, 15.0) * 2.0,0.0,1.0);
+		float underCover = saturate(pow(lightmap, 15.0) * 2.0);
 
 		float wavyMult  = 1.0;
 
@@ -83,9 +88,9 @@ attribute vec4 at_tangent;
 			position.xyz += waving2 * 0.1;
 
 		// Waving plants
-		if (istopv > 0.9) {
+		if (istopv) {
 			if ( mc_Entity.x == TALLGRASS || mc_Entity.x == DANDELION || mc_Entity.x == ROSE || mc_Entity.x == WHEAT || mc_Entity.x == FIRE ||
-			mc_Entity.x == NETHER_WART || mc_Entity.x == DEAD_BUSH || mc_Entity.x == CARROT || mc_Entity.x == POTATO)
+					 mc_Entity.x == NETHER_WART || mc_Entity.x == DEAD_BUSH || mc_Entity.x == CARROT || mc_Entity.x == POTATO)
 				position.xyz += waving2;
 		}
 	}
@@ -95,14 +100,14 @@ void main() {
 
 	material = 0.0;
 
-  	lightmapCoord = vec4(0.0);
+	lightmapCoord = vec4(0.0);
 	#ifndef gbuffers_basic
   	lightmapCoord = gl_TextureMatrix[1] * gl_MultiTexCoord1;
 	#endif
 
 	texcoord = gl_MultiTexCoord0;
 
-  	color = gl_Color;
+  color = gl_Color;
 
 	#if defined gbuffers_terrain && defined WAVING_TERRAIN
 		vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
@@ -119,6 +124,13 @@ void main() {
   binormal = normalize(cross(tangent, normal));
 
   tbnMatrix = transpose(mat3(tangent, binormal, normal));
+
+	#if defined gbuffers_terrain && defined POM
+		#define transMAD(mat, v) (mat3(mat) * (v) + (mat)[3].xyz)
+
+		modelView = normalize(gl_ModelViewMatrix * gl_Vertex).xyz;
+		p3 = transMAD(gl_ModelViewMatrix, gl_Vertex.xyz);
+	#endif
 
   float id = mc_Entity.x;
 
