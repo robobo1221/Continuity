@@ -355,7 +355,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 				color = CalculateAtmosphericSky(toWorldSpace(dir), land) * 0.1;
 			#endif
 
-			color = getStars(color, dir);
+			//color = getStars(color, dir);
 			#ifdef CLOUDS
 				color = getClouds(color, dir);
 			#endif
