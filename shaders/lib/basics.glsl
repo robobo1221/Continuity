@@ -1,4 +1,4 @@
-vec3 aux1 = texture2D(colortex1, texcoord.st).rgb;
+vec4 aux1 = texture2D(colortex1, texcoord.st);
 vec3 aux2 = texture2D(colortex2, texcoord.st).rgb;
 
 vec3 normalToViewSpace(vec3 worldSpace) {
