@@ -260,9 +260,9 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 	vec3 avgSkylight    = YxyToRGB(calculateZenithLuminanceYxy(turbidity, acos(mDot(sunVec, upVec)))) * lightColor * (1.0 - rainStrength * 0.5);
 	castedSkylight 			= mix(castedSkylight, powf(avgSkylight, CONTRAST) * BRIGHTNESS, 0.9);
 
-  vec3 torchLightmap 	= ((1.0 / (1.0 - pow(mix(lightmaps1.x, 0.8, emitter), 6.0)) - 1.0)
-											+ emitter * pow(length(color), 4.0) * 6.0) *
-	 										torchColor * pow(ao, mix(0.0, 6.0, 1.0 - pow(lightmaps1.x, 3.0)));
+  vec3 torchLightmap 	= ((1.0 / (1.0 - pow(mix(lightmaps1.x, 0.8, emitter), 3.0)) - 1.0)
+											+ emitter * pow(length(color), 7.0) * 7.0) *
+	 										torchColor * pow(ao, mix(0.0, 9.0, 1.0 - pow(lightmaps1.x, 3.0)));
 
   vec3 skyLightmap 		= pow(lightmaps1.y, 4.0) *
 											castedSkylight * pow(ao, mix(1.0, 4.0, 1.0 - pow(lightmaps1.y, 3.0)))+vec3(0.0);
