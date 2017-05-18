@@ -195,6 +195,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		float c = hash12(p + vec2(0., 1.));
 		float d = hash12(p + vec2(1., 1.));
 
+
 		vec2 g = f - 1.;
 		g *= g;
 
@@ -207,7 +208,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 		vec2 derivatives = z * (vec2(b, c) + (a - b - c + d) * v.yx - a);
 
-		vec3 normal = cross(vec3(1,0,derivatives.x),vec3(0,1,derivatives.y));
+		vec3 normal = cross(vec3(15,0,derivatives.x),vec3(0,1,derivatives.y));
 
 		return vec4(normal, noise);
 	}
@@ -218,7 +219,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		float xmpi2 = x - 3.14159265359;
 		xmpi2 *= xmpi2;
 
-		float x252 = x - 4.5;
+		float x252 = x - 14.5;
 		x252 *= x252;
 
 		return
@@ -231,7 +232,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 	}
 
 	vec3 getClouds(vec3 color, vec3 fpos) {
-		float cloudHeight = 400.0 + bayer(gl_FragCoord.st) * 10.0;
+		float cloudHeight = 400.0 + bayer(gl_FragCoord.st) * 30.0;
 		vec3 wpos = normalize(toWorldSpace(fpos));
 
 		vec3 cloudPosition = wpos * ((cloudHeight) / wpos.y - wpos.y);
@@ -275,9 +276,9 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 		vec3 cloudColor = lightColor * 11.0 * (0.8 + phase * 0.6);
 
-		vec3 clouds = mix(vec3(0.007, 0.01, 0.015) * (lightColor) * 6.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.02 - noise.a, 37.0));
+		vec3 clouds = mix(vec3(0.007, 0.01, 0.012) * (lightColor) * 6.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.02 - noise.a, 37.0));
 
-		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 2.8));
+		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 3.8));
 	}
 #endif
 
