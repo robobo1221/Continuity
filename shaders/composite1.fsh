@@ -248,7 +248,7 @@ vec3 nightDesaturation(vec3 inColor, vec2 lightmap){
 		vec3 desatColor = vec3(dot(inColor, vec3(1.0)));
 		float mixAmount = clamp(lightmap.x, 0.0, 1.0);
 
-	return mix(inColor, mix(desatColor*nightColor, (desatColor*colorSaturate(torchColor, 0.3)*3)*4, mixAmount), min(time[1].y, 0.65));//mix(mix(inColor*torchcolor2*20, desatColor*nightColor, mixAmount), inColor, saturate(TimeNoon+TimeSunset+TimeSunrise-min(pow(rainx, 5.0), 0.7)));
+	return mix(inColor, mix(desatColor*nightColor, (mix(desatColor, inColor, 0.5)*colorSaturate(torchColor, 0.35)*10)*4, mixAmount), clamp(min(time[1].y, 0.65)+pow(1-lightmap.y,1.4),0.0,1.0));//mix(mix(inColor*torchcolor2*20, desatColor*nightColor, mixAmount), inColor, saturate(TimeNoon+TimeSunset+TimeSunrise-min(pow(rainx, 5.0), 0.7)));
 }
 
 void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
@@ -278,6 +278,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
   color *= finalShading;
   color = nightDesaturation(color,lightmaps1*vec2(2.0, 1.0));
 	color += specular * shadowLightmap;
+//	color = vec3(pow(lightmaps1.y, 5.0));
 
 	if (water > 0.5 && transparent > 0.5 && isEyeInWater < 0.5) {
 		color *= waterAbsorption(fpos1, fpos2);

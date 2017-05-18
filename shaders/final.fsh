@@ -97,7 +97,7 @@ vec2 distortTexcoord() {
 
 float exposure() {
   float moonFade = smoothstep(-0.1, 0.1, dot(normalize(-sunPosition), normalize(upPosition)));
-  return mix(saturate((-eyeBrightnessSmooth.y + 230) / 100.0), 1.0, moonFade);
+  return 0.0;//mix(saturate((-eyeBrightnessSmooth.y + 230) / 100.0), 1.0, moonFade);
 }
 
 #ifdef FILM_GRAIN
