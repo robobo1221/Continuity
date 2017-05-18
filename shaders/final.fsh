@@ -123,7 +123,7 @@ vec3 curve(vec3 x, vec3 a, vec3 b, vec3 c, vec3 d, vec3 e) {
 }
 
 vec3 burgess(vec3 x) {
-	vec3 a, b, c, d, e, f;
+  vec3 a, b, c, d, e, f;
   float g;
 
 //Basic tonemapping, swap between them as you see fit
@@ -239,7 +239,8 @@ vec3 burgess(vec3 x) {
 
     // Lens specs referenced from Sigma 35mm F1.4 Art.
 		// Focal length of 35mm (Assuming lens does not zoom), with a diaphram size of 25mm at f1.4. For more accurate to lens settings, set blades to 9.
-		float focalLength = 35.0 / 1000.0;
+        //focal length pre-calculated from 35/1000 - Strum355
+		const float focalLength = 0.035;
 		float aperture = (35.0 / FSTOP) / 1000.0;
 
     float z = -toScreenSpace(tc.st, texture2D(depthtex1, tc.st).x).z;
@@ -303,8 +304,8 @@ vec3 burgess(vec3 x) {
 
 		vec3 lens = vec3(0.0);
 
-    vec3 color1 = vec3(1.0,0.6,0.4);
-    vec3 color2 = vec3(1.0,0.4,0.3);
+    const vec3 color1 = vec3(1.0,0.6,0.4);
+    const vec3 color2 = vec3(1.0,0.4,0.3);
 
 		lens += (BicubicTexture(colortex5, tc.st / pow(2.0, 4.0) + vec2(0.0, 0.5)).rgb * 10.0) * color1;
 		lens += (BicubicTexture(colortex5, tc.st / pow(2.0, 4.0) + vec2(0.2, 0.5)).rgb * 10.0) * color2;

@@ -122,7 +122,7 @@ float getShadows(in vec3 fpos) {
 
   size *= getDistortFactor(sPos);
 
-  int samples = 32;
+  const int samples = 32;
 
 	float distance   = length(fpos);
 	float filterDist = 70.0;
@@ -151,8 +151,8 @@ float getShadows(in vec3 fpos) {
 	  #define circlemap(p) (vec2(cos((p).y*tau), sin((p).y*tau)) * p.x)
 
 	  float jaao(vec2 p) {
-			float r = 2.0;
-    	int steps = 4;
+		const float r = 2.0;
+    	const int steps = 4;
 
 	    int x = int(p.x*viewWidth)  % 4;
 	    int y = int(p.y*viewHeight) % 4;
@@ -251,7 +251,7 @@ void main() {
 	vec3 fpos2 = toScreenSpace(texcoord.st, depth2);
 
 	vec3 color = toLinear(texture2D(colortex0, texcoord.st).rgb);
-	
+
 	vec3 specular = texture2D(colortex4, texcoord.st).rgb;
 
 

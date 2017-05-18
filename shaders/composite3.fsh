@@ -134,7 +134,7 @@ vec3 bokehImage(float lod, vec2 offset) {
 
 		float scale = pow(2.0, lod);
 		vec2 coord  = scaleTex((texcoord.st - offset) * scale, dist);
-		float res   = 0.001;
+		const float res   = 0.001;
 
 		if (coord.x > -0.1 && coord.y > -0.1 && coord.x < 1.1 && coord.y < 1.1) {
 			for (int i = 0;  i < 80; i++) {

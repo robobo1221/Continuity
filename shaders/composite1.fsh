@@ -175,7 +175,7 @@ vec3 getShadows(vec3 fpos, bool SSS) {
   #endif
   size *= getDistortFactor(sPos);
 
-  int samples = 2;
+ const int samples = 2;
 
 	if (SSS) {
 		if (water > 0.5) {
@@ -234,6 +234,23 @@ vec3 waterScatter(vec3 fpos1, vec3 fpos2) {
 	return waterColor * waterShading * depthMap;
 }
 
+
+float luma(vec3 color) {
+  return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
+vec3 colorSaturate(in vec3 base, in float saturation) {
+    return vec3(mix(base, vec3(luma(base)), -saturation));
+}
+
+vec3 nightDesaturation(vec3 inColor, vec2 lightmap){
+		vec3 nightColor = vec3(0.25, 0.35, 0.7);
+		vec3 desatColor = vec3(dot(inColor, vec3(1.0)));
+		float mixAmount = clamp(lightmap.x, 0.0, 1.0);
+
+	return mix(inColor, mix(desatColor*nightColor, (desatColor*colorSaturate(torchColor, 0.3)*3)*4, mixAmount), min(time[1].y, 0.65));//mix(mix(inColor*torchcolor2*20, desatColor*nightColor, mixAmount), inColor, saturate(TimeNoon+TimeSunset+TimeSunrise-min(pow(rainx, 5.0), 0.7)));
+}
+
 void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 	float diffuse = Burley(-normalize(fpos2), lightVec, normal1, 0.5);
 	vec3 specular = BRDF(normal1, normalize(-fpos1), lightVec, 0.4, vec3(0.02));
@@ -248,7 +265,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 	 										torchColor * pow(ao, mix(0.0, 6.0, 1.0 - pow(lightmaps1.x, 3.0)));
 
   vec3 skyLightmap 		= pow(lightmaps1.y, 4.0) *
-											castedSkylight * pow(ao, mix(1.0, 4.0, 1.0 - pow(lightmaps1.y, 3.0)));
+											castedSkylight * pow(ao, mix(1.0, 4.0, 1.0 - pow(lightmaps1.y, 3.0)))+vec3(0.0);
 
 	vec3 shadowLightmap = getShadows(fpos2, false) * lightColor * (1.0 - rainStrength);
 
@@ -259,6 +276,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
   vec3 finalShading = torchLightmap + skyLightmap + shadowLightmap + SSS;
 
   color *= finalShading;
+  color = nightDesaturation(color,lightmaps1*vec2(2.0, 1.0));
 	color += specular * shadowLightmap;
 
 	if (water > 0.5 && transparent > 0.5 && isEyeInWater < 0.5) {

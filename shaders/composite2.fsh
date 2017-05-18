@@ -456,7 +456,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		float volumetricFogSample = 0.0;
 		float totalWeight = 0.0;
 
-		float radius = 4.0;
+		const float radius = 4.0;
 
 		for (float i = -1.0; i < 1.0; i++){
 			for (float j = -1.0; j < 1.0; j++){
