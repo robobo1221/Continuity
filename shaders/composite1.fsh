@@ -317,7 +317,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 		return step / VL_STEPS;
 	}
 #endif
-
+/*
 #ifdef VOLUMETRIC_CLOUDS
 	vec4 mod289(vec4 x){return x - floor(x * 0.003460) * 289.0;}
 	vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
@@ -471,7 +471,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 		return clouds;
 	}
 #endif
-
+*/
 void main() {
 
 	vec3 color = toLinear(texture2D(colortex0, texcoord.st).rgb);
@@ -490,11 +490,11 @@ void main() {
 	#ifdef VOLUMETRIC_LIGHT
 		vl = getVL();
 	#endif
-
+/*
 	#ifdef VOLUMETRIC_CLOUDS
 		vc = getClouds3D(color, fpos2);
 	#endif
-
+*/
 	if (isnan(color)) color = vec3(0.0);
 
 	//color.rgb = toLinear(texture2D(colortex5, texcoord.st).rgb);
