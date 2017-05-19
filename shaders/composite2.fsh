@@ -5,6 +5,7 @@
 #include "lib/settings.glsl"
 
 const bool    colortex0MipmapEnabled = true;
+const bool    colortex4MipmapEnabled = true;
 const bool    colortex5MipmapEnabled = true;
 
 varying vec4 texcoord;
@@ -13,6 +14,7 @@ uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D colortex3;
+uniform sampler2D colortex4;
 uniform sampler2D colortex5;
 
 uniform sampler2D depthtex0;
@@ -242,7 +244,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		float phase    = phaseCloud(dot(lightVec, normalize(fpos)));
 		float aBeer		 = pow(1.0 + dot(downVec, normalize(fpos)), 2.0);
 		float movement = frameTimeCounter * 0.03;
-		float coverage = mix(0.39, 0.0, rainStrength);
+		float coverage = mix(0.39 * (2.0 - pow(horizon, 0.1)), 0.0, rainStrength);
 
 		vec4 noise;
 		noise		= normalNoise(coord * vec2(2.3, 1.8) + movement);
@@ -450,6 +452,38 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 	}
 #endif
 
+#ifdef VOLUMETRIC_CLOUDS
+	void getVC(inout vec3 color, in vec3 fpos){
+
+		vec4 clouds = vec4(0.0);
+		float totalWeight = 0.0;
+
+		float radius = 4.0;
+
+		for (float i = -1.0; i < 1.0; i++){
+			for (float j = -1.0; j < 1.0; j++){
+
+				vec2 offset = (vec2(i,j) + 0.5) / vec2(viewWidth, viewHeight) * radius;
+
+				float vcDepth = texture2D(depthtex1, texcoord.st + offset).x;
+
+				float weight = pow(1.0 - abs(depth2 - vcDepth) * 10.0, 32.0);
+					weight = max(0.1e-8, weight);
+
+				clouds += texture2DLod(colortex4, texcoord.xy + offset, 1.0) * weight;
+
+				totalWeight += weight;
+			}
+		}
+
+		clouds /= totalWeight;
+
+		clouds = texture2DLod(colortex4, texcoord.xy, 1.75);
+
+		color = mix(color, clouds.rgb, saturate(clouds.a * 1.0));
+	}
+#endif
+
 #ifdef VOLUMETRIC_LIGHT
 	void getVL(inout vec3 color, in vec3 fpos){
 
@@ -525,6 +559,10 @@ void main() {
 	#endif
 
 	doFog(color.rgb, fpos1);
+
+	#ifdef VOLUMETRIC_CLOUDS
+    getVC(color.rgb, fpos2);
+  #endif
 
   #ifdef VOLUMETRIC_LIGHT
     getVL(color.rgb, fpos2);

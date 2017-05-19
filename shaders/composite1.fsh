@@ -43,6 +43,7 @@ uniform vec3 shadowLightPosition;
 uniform vec3 upPosition;
 uniform vec3 sunPosition;
 uniform vec3 cameraPosition;
+uniform float frameTimeCounter;
 uniform float rainStrength;
 uniform float viewWidth;
 uniform float viewHeight;
@@ -248,7 +249,9 @@ vec3 nightDesaturation(vec3 inColor, vec2 lightmap){
 		vec3 desatColor = vec3(dot(inColor, vec3(1.0)));
 		float mixAmount = clamp(lightmap.x, 0.0, 1.0);
 
-	return mix(inColor, mix(desatColor*nightColor, (mix(desatColor, inColor, 0.5)*colorSaturate(torchColor, 0.35)*10)*4, mixAmount), clamp(min(time[1].y, 0.65)+pow(1-lightmap.y,1.4),0.0,1.0));//mix(mix(inColor*torchcolor2*20, desatColor*nightColor, mixAmount), inColor, saturate(TimeNoon+TimeSunset+TimeSunrise-min(pow(rainx, 5.0), 0.7)));
+	return mix(inColor,
+				 mix(desatColor * nightColor,
+				(mix(desatColor, inColor, 0.5) * colorSaturate(torchColor, 0.35) * 10) * 4, mixAmount), saturate(min(moonFade, 0.65)+pow(1 - lightmap.y, 1.4)));//mix(mix(inColor*torchcolor2*20, desatColor*nightColor, mixAmount), inColor, saturate(TimeNoon+TimeSunset+TimeSunrise-min(pow(rainx, 5.0), 0.7)));
 }
 
 void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
@@ -315,6 +318,160 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 	}
 #endif
 
+#ifdef VOLUMETRIC_CLOUDS
+	vec4 mod289(vec4 x){return x - floor(x * 0.003460) * 289.0;}
+	vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
+
+	float noise3D(vec3 p){
+    vec3 a = floor(p);
+    vec3 d = p - a;
+    d = d * d * (3.0 - 2.0 * d);
+
+    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+    vec4 k1 = perm(b.xyxy);
+    vec4 k2 = perm(k1.xyxy + b.zzww);
+
+    vec4 c = k2 + a.z;
+    vec4 k3 = perm(c);
+    vec4 k4 = perm(c + 1.0);
+
+    vec4 o1 = fract(k3 * 0.02439024390243902439024390243902);
+    vec4 o2 = fract(k4 * 0.02439024390243902439024390243902);
+
+    vec4 o3 = (o2 * d.z) + (o1 * (1.0 - d.z));
+    vec2 o4 = (o3.yw * d.x) + (o3.xz * (1.0 - d.x));
+
+    return (o4.y * d.y) + (o4.x * (1.0 - d.y));
+	}
+
+	float cloudFBM3D(vec3 p){
+
+		float wind = abs(frameTimeCounter - 0.5);
+
+		p.xz += wind;
+
+		p *= 0.02;
+
+		float noise  = noise3D(vec3(p.x - wind * 0.01, p.y, p.z - wind * 0.015));
+			  	noise += noise3D(p * 3.5) / 3.5;
+			  	noise += abs(noise3D(p * 6.125) * 2.0 - 1.0) / 6.125;
+			  	noise += abs(noise3D(p * 6.125 * 2.0) * 2.0 - 1.0) / 6.125 / 2.0;
+
+			  	noise = noise * (1.0 - rainStrength * 0.5);
+			  	noise = pow(max(1.0 - noise * 1.5 / VOLUMETRIC_CLOUDS_COVERAGE,0.),2.0) * 0.030303;
+
+		return clamp(noise * 10.0, 0.0, 1.0);
+	}
+
+	float expDepth(float dist){
+		return (far * (dist - near)) / (dist * (far - near));
+	}
+
+	vec4 getVolumetricCloudPosition(vec2 coord, float depth)
+	{
+		vec4 position = gbufferProjectionInverse * vec4(vec3(coord, expDepth(depth)) * 2.0 - 1.0, 1.0);
+			 position /= position.w;
+
+		     position.rgb = toWorldSpace(position.rgb);
+
+		     position.rgb += cameraPosition;
+
+		return position;
+	}
+
+	vec4 getVolumetricCloudsColor(vec3 wpos, vec3 fpos, vec3 ambient, float phase) {
+		const float height = 170.0;  	//Height of the clouds
+		const float distRatio = 100.0;  	//Distance between top and bottom of the cloud in block * 10.
+
+		float maxHeight = (distRatio * 0.5) + height;
+		float minHeight = height - (distRatio * 0.5);
+
+		if (wpos.y < minHeight || wpos.y > maxHeight){
+			return vec4(0.0);
+		} else {
+
+			float cloudAlpha = cloudFBM3D(wpos);
+			float cloudTreshHold = pow(1.0f - clamp(distance(wpos.y, height) / (distRatio / 2.0f), 0.0f, 1.0f), 12.0);
+
+			cloudAlpha *= cloudTreshHold;
+
+			float absorption = clamp((-(minHeight - wpos.y) / distRatio), 0.0f, 1.0f);
+
+			float sunLightAbsorption = pow(absorption, 5.0);
+
+			vec3 cloudSunlight = lightColor * 10.0 * sunLightAbsorption * (1.0 + phase);
+
+			vec3 cloudColor = mix(cloudSunlight, ambient * (0.25 + (rainStrength * 0.5)), pow(1.0 - absorption / 2.8, 4.0f));
+
+				cloudColor /= 1.0 + cloudColor;
+
+			return vec4(cloudColor, cloudAlpha);
+		}
+	}
+
+	float phaseCloud(float x){
+		x = facos(x);
+
+		float xmpi2 = x - 3.14159265359;
+		xmpi2 *= xmpi2;
+
+		float x252 = x - 2.5;
+		x252 *= x252;
+
+		return
+				 17.7 * exp(  -3.9 * x     )+
+				1744. * exp(-1200. * x*x   )+
+					.17 * exp(  -75. * x252  )+
+					 .3 * exp(-4826. * xmpi2 )+
+					 .2 * exp(  -50. * xmpi2 )+
+					.15 * exp(   -1. * xmpi2 );
+	}
+
+	vec4 getClouds3D(vec3 color, vec3 p){
+
+		vec4 clouds = vec4(0.1 * lightColor, 0.0);
+		vec3 ambient = YxyToRGB(calculateZenithLuminanceYxy(turbidity, acos(mDot(sunVec, upVec)))) * lightColor * (1.0 - rainStrength * 0.9);
+		float phase = phaseCloud(dot(normalize(p), lightVec));
+
+		float nearPlane = 2.0;			//start to where the ray should march.
+		float farPlane = far; 		//End from where the ray should march.
+
+	    float increment = far / 10.0;
+
+		float dither = bayer(gl_FragCoord.st);
+
+		farPlane += dither * increment;
+
+		vec3 worldPosition2 = toWorldSpace(p);
+
+		while (farPlane > nearPlane){
+
+			vec4 wpos = getVolumetricCloudPosition(texcoord.st, farPlane);
+
+			vec4 result = getVolumetricCloudsColor(wpos.rgb, p, powf(ambient, CONTRAST) * BRIGHTNESS, phase);
+				 result.a = clamp(result.a * VOLUMETRIC_CLOUDS_DENSITY, 0.0, 1.0);
+
+			float volumetricDistance = length(wpos.xyz - cameraPosition.xyz);
+
+			if (length(worldPosition2) < volumetricDistance ){
+				result.a = 0.0;
+			}
+
+			//if (length(worldPosition) < volumetricDistance ){
+				 //result.rgb = renderGaux2(result.rgb, normal2);
+			//}
+
+			clouds.rgb = mix(clouds.rgb, result.rgb, min(result.a * VOLUMETRIC_CLOUDS_DENSITY, 1.0));
+			clouds.a += result.a * VOLUMETRIC_CLOUDS_DENSITY;
+
+			farPlane -= increment;
+
+		}
+
+		return clouds;
+	}
+#endif
+
 void main() {
 
 	vec3 color = toLinear(texture2D(colortex0, texcoord.st).rgb);
@@ -328,17 +485,23 @@ void main() {
   doShading(color.rgb, fpos1, fpos2);
 
 	vec3 vl = vec3(0.0);
+	vec4 vc = vec4(0.0);
 
 	#ifdef VOLUMETRIC_LIGHT
 		vl = getVL();
+	#endif
+
+	#ifdef VOLUMETRIC_CLOUDS
+		vc = getClouds3D(color, fpos2);
 	#endif
 
 	if (isnan(color)) color = vec3(0.0);
 
 	//color.rgb = toLinear(texture2D(colortex5, texcoord.st).rgb);
 
-/* DRAWBUFFERS:05 */
+/* DRAWBUFFERS:045 */
 
 	gl_FragData[0] = vec4(toGamma(color.rgb), 1.0);
-  gl_FragData[1] = vec4(vl, encodeColor(albedo));
+	gl_FragData[1] = vc;
+  gl_FragData[2] = vec4(vl, encodeColor(albedo));
 }
