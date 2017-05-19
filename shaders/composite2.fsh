@@ -276,9 +276,9 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 		vec3 cloudColor = lightColor * 11.0 * (0.8 + phase * 0.6);
 
-		vec3 clouds = mix(vec3(0.007, 0.01, 0.012) * (lightColor) * 6.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.02 - noise.a, 37.0));
+		vec3 clouds = mix(vec3(0.007, 0.01, 0.012) * (lightColor) * 6.6, cloudColor, pow(cloudsSun, 0.8) * pow(1.0 - noise.a, 30.0));
 
-		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * horizon * 3.8));
+		return mix(color, clouds, saturate(smoothstep(0.,1.25,noise.a*4.) * pow(cloudsSun, 0.8) * horizon * 3.8));
 	}
 #endif
 
