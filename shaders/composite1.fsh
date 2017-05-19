@@ -215,7 +215,7 @@ vec3 waterAbsorption(vec3 fpos1, vec3 fpos2) {
 
 	float depthMap = distance(fpos1, fpos2);
 
-	return powf(waterAbsorptionColor, pow(depthMap, 1.8)* 1.1);
+	return powf(waterAbsorptionColor, pow(depthMap, 1.3)* 1.1);
 }
 
 vec3 waterScatter(vec3 fpos1, vec3 fpos2) {
@@ -317,7 +317,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 		return step / VL_STEPS;
 	}
 #endif
-/*
+
 #ifdef VOLUMETRIC_CLOUDS
 	vec4 mod289(vec4 x){return x - floor(x * 0.003460) * 289.0;}
 	vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
@@ -380,8 +380,8 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 	}
 
 	vec4 getVolumetricCloudsColor(vec3 wpos, vec3 fpos, vec3 ambient, float phase) {
-		const float height = 170.0;  	//Height of the clouds
-		float distRatio = 100.0 * (1.0 + rainStrength);  	//Distance between top and bottom of the cloud in block * 10.
+		const float height = VOLUMETRIC_CLOUDS_HEIGHT;  	//Height of the clouds
+		float distRatio = 100.0 * (1.0 + rainStrength * 0.5);  	//Distance between top and bottom of the cloud in block * 10.
 
 		float maxHeight = (distRatio * 0.5) + height;
 		float minHeight = height - (distRatio * 0.5);
@@ -399,7 +399,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 
 			float sunLightAbsorption = pow(absorption, 5.0);
 
-			vec3 cloudSunlight = lightColor * 10.0 * sunLightAbsorption * (1.0 + phase) * (1.0 - rainStrength * 0.5);
+			vec3 cloudSunlight = lightColor * 10.0 * sunLightAbsorption * (1.0 + phase) * (1.0 - rainStrength * 1.0);
 
 			vec3 cloudColor = mix(cloudSunlight, ambient * (0.25 + (rainStrength * 0.5)), pow(1.0 - absorption / 1.0, 4.0f));
 
@@ -471,7 +471,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 		return clouds;
 	}
 #endif
-*/
+
 void main() {
 
 	vec3 color = toLinear(texture2D(colortex0, texcoord.st).rgb);
@@ -490,11 +490,11 @@ void main() {
 	#ifdef VOLUMETRIC_LIGHT
 		vl = getVL();
 	#endif
-/*
+
 	#ifdef VOLUMETRIC_CLOUDS
 		vc = getClouds3D(color, fpos2);
 	#endif
-*/
+
 	if (isnan(color)) color = vec3(0.0);
 
 	//color.rgb = toLinear(texture2D(colortex5, texcoord.st).rgb);

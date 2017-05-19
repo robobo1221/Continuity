@@ -399,7 +399,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 					float F0 = mix(0.02, 0.05, water);
 					float fresnel = F0 + (1. - F0) * pow(1.-VoH,5.);
 
-					color +=  (fresnel * 6.5) * G(NoV, NoL, alpha) * rayTrace(l, p3, clip3, skyLightmap)  * VoH / (NoH * NoV);
+					color +=  (fresnel * 0.5) * G(NoV, NoL, alpha) * rayTrace(l, p3, clip3, skyLightmap)  * VoH / (NoH * NoV);
 			}
 
 			return color / float(steps);
@@ -451,7 +451,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		}
 	}
 #endif
-/*
+
 #ifdef VOLUMETRIC_CLOUDS
 	void getVC(inout vec3 color, in vec3 fpos){
 
@@ -483,7 +483,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		color = mix(color, clouds.rgb, saturate(clouds.a * 1.0));
 	}
 #endif
-*/
+
 #ifdef VOLUMETRIC_LIGHT
 	void getVL(inout vec3 color, in vec3 fpos){
 
@@ -559,11 +559,11 @@ void main() {
 	#endif
 
 	doFog(color.rgb, fpos1);
-/*
+
 	#ifdef VOLUMETRIC_CLOUDS
     getVC(color.rgb, fpos2);
   #endif
-*/
+
   #ifdef VOLUMETRIC_LIGHT
     getVL(color.rgb, fpos2);
   #endif

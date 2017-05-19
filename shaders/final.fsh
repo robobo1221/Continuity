@@ -180,14 +180,14 @@ vec3 burgess(vec3 x) {
 #endif
 
 #if TONEMAP_PRESET == 5
-  //Miyoko's Preference (Also default)
-    a = vec3(1.6, 1.6, 1.6);	//Exposure
+  //Silvia's Preference (Also default)
+    a = vec3(1.5, 1.6, 1.6);	//Exposure
     b = vec3(0.6, 0.6, 0.6);	//Contrast
     c = vec3(12.0, 12.0, 12.0);	//Vibrance
-    d = vec3(0.36, 0.4, 0.38);	//Gamma
-    e = vec3(0.00, 0.00, 0.00);	//Lift
-    f = vec3(1.0, 1.0, 1.0);    //Highlights
-    g = 1.0;                    //Saturation
+    d = vec3(0.33, 0.36, 0.36);	//Gamma
+    e = vec3(0.000, 0.000, 0.000);	//Lift
+    f = vec3(1.05, 1.02, 1.0);    //Highlights
+    g = 1.09;                    //Saturation
 #endif
 
 #if TONEMAP_PRESET == 6

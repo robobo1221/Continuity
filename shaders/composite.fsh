@@ -151,8 +151,8 @@ float getShadows(in vec3 fpos) {
 	  #define circlemap(p) (vec2(cos((p).y*tau), sin((p).y*tau)) * p.x)
 
 	  float jaao(vec2 p) {
-		const float r = 2.0;
-    	const int steps = 4;
+		const float r = 1.3;
+    	const int steps = 3;
 
 	    int x = int(p.x*viewWidth)  % 4;
 	    int y = int(p.y*viewHeight) % 4;

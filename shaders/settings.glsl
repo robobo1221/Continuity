@@ -2,7 +2,7 @@
 
 #define WAVING_TERRAIN
 
-//#define POM
+#define POM
   #define POM_MAP_RES 64. //[16. 32. 64. 128. 256. 512.]
   #define POM_DEPTH 4. //actually inverse POM depth
 
@@ -10,35 +10,30 @@
 #define SSAO
   #define SSAO_METHOD 1 //[1 2]
 
-  #define SSAO_STRENGTH 0.2 //[0.2 0.5 1.0 2.0 3.0 4.0 5.0]
+  #define SSAO_STRENGTH 1.0 //[0.5 1.0 2.0 3.0 4.0 5.0]
 
 #define VOLUMETRIC_LIGHT
   #define COLORED_VL
   #define VL_DISTANCE 256.0
-  #define VL_STEPS 3
+  #define VL_STEPS 6
 
 #define REFLECTIONS
   #define ROUGH_REFLECTIONS
-  #define R_QUALITY 5 //[1 5 10 15 20 30 40 60 80 100] Quality of the raytracer. Higher numbers mean more accurate reflections
+  #define R_QUALITY 10 //[10 15 20 30 40 60 80 100] Quality of the raytracer. Higher numbers mean more accurate reflections
   #define R_STEPS 1 //[1 2 4 8 12 20] Quality of raytracer. Higher numbers mean less speckly rough reflections
 
 #define ROUGH_WATER
 
-//#define WATER_PARALLAX
+#define WATER_PARALLAX
 
-//#define CLOUDS
+#define CLOUDS
   #define CLOUD_STYLE 2 //[1 2]
   #define CLOUD_HEIGHT_2D   512  // [384 512 640 768] For cloud style 1
   #define CLOUD_COVERAGE_2D 0.5
   #define CLOUD_SPEED_2D    1.00 // [0.25 0.50 1.00 2.00 4.00] For cloud style 1
 
-#define VOLUMETRIC_CLOUDS
-  #define VOLUMETRIC_CLOUDS_DENSITY 100.0 //[10.0 20.0 40.0 50.0 80.0 100.0 150.0 200.0 250.0]
-  #define VOLUMETRIC_CLOUDS_COVERAGE 1.0 //[0.5 0.75 1.0 1.25 1.5 1.75 2.0]
-  #define VOLUMETRIC_CLOUDS_HEIGHT 160.0 //[60.0 80.0 100.0 120.0 140.0 160.0 180.0 200.0 220.0 240.0 260.0]
-
 #define SKY_MODEL 1 //[1 2] 1: Fast Perez, good for looks + performance. 2: BROOOOCE, slow but beautiful
-#define HORIZON_HEIGHT 5 // [5 62 72 80 128 192 208]
+#define HORIZON_HEIGHT 62 // [5 62 72 80 128 192 208]
 
 #define BLOOM
 
@@ -47,7 +42,7 @@
   //#define HQ_MOTIONBLUR //High quality motion blur. Requires MOTIONBLUR. ENABLE ONE!
   #define MOTIONBLUR_AMOUNT 1.0
 
-//#define DYN_LENS
+#define DYN_LENS
 
 //#define DOF
   //#define HQ_DOF
@@ -67,7 +62,7 @@
 //#define LENS_DISTORTION
   #define LDIST_AMOUNT 0.8
 
-#define AVERAGE_EXPOSURE_STRENGTH 1.15 
+#define AVERAGE_EXPOSURE_STRENGTH 1.15 //[0.5 0.75 1.0 1.25 1.5]
 
 #define FILM_GRAIN
 	#define FILM_GRAIN_STRENGTH 0.2 //[0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.1]
