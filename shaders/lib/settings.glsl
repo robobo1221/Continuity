@@ -32,6 +32,10 @@
   #define CLOUD_COVERAGE_2D 0.5
   #define CLOUD_SPEED_2D    1.00 // [0.25 0.50 1.00 2.00 4.00] For cloud style 1
 
+#define VOLUMETRIC_CLOUDS
+  #define VOLUMETRIC_CLOUDS_DENSITY 100.0 //[10.0 20.0 40.0 50.0 80.0 100.0 150.0 200.0 250.0]
+  #define VOLUMETRIC_CLOUDS_COVERAGE 1.0 //[0.5 0.75 1.0 1.25 1.5 1.75 2.0]
+
 #define SKY_MODEL 1 //[1 2] 1: Fast Perez, good for looks + performance. 2: BROOOOCE, slow but beautiful
 #define HORIZON_HEIGHT 62 // [5 62 72 80 128 192 208]
 
