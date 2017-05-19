@@ -9,8 +9,8 @@ const int colortex0Format = RGBA32F;
 const int colortex1Format = RGBA16;
 const int colortex2Format = RGBA16;
 const int colortex3Format = RGBA16;
+const int colortex4Format = RGBA16;
 const int colortex5Format = RGBA16;
-const int shadowcolor0Format = RGBA32F;
 */
 
 // Half Lives
