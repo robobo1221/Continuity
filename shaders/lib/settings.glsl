@@ -15,7 +15,7 @@
 #define VOLUMETRIC_LIGHT
   #define COLORED_VL
   #define VL_DISTANCE 256.0
-  #define VL_STEPS 6
+  #define VL_STEPS 3
 
 #define REFLECTIONS
   #define ROUGH_REFLECTIONS
