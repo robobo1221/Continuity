@@ -381,7 +381,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 
 	vec4 getVolumetricCloudsColor(vec3 wpos, vec3 fpos, vec3 ambient, float phase) {
 		const float height = 170.0;  	//Height of the clouds
-		const float distRatio = 100.0;  	//Distance between top and bottom of the cloud in block * 10.
+		float distRatio = 100.0 * (1.0 + rainStrength);  	//Distance between top and bottom of the cloud in block * 10.
 
 		float maxHeight = (distRatio * 0.5) + height;
 		float minHeight = height - (distRatio * 0.5);
@@ -399,9 +399,9 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 
 			float sunLightAbsorption = pow(absorption, 5.0);
 
-			vec3 cloudSunlight = lightColor * 10.0 * sunLightAbsorption * (1.0 + phase);
+			vec3 cloudSunlight = lightColor * 10.0 * sunLightAbsorption * (1.0 + phase) * (1.0 - rainStrength * 0.5);
 
-			vec3 cloudColor = mix(cloudSunlight, ambient * (0.25 + (rainStrength * 0.5)), pow(1.0 - absorption / 2.8, 4.0f));
+			vec3 cloudColor = mix(cloudSunlight, ambient * (0.25 + (rainStrength * 0.5)), pow(1.0 - absorption / 1.0, 4.0f));
 
 				cloudColor /= 1.0 + cloudColor;
 
