@@ -451,7 +451,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		}
 	}
 #endif
-
+/*
 #ifdef VOLUMETRIC_CLOUDS
 	void getVC(inout vec3 color, in vec3 fpos){
 
@@ -483,7 +483,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 		color = mix(color, clouds.rgb, saturate(clouds.a * 1.0));
 	}
 #endif
-
+*/
 #ifdef VOLUMETRIC_LIGHT
 	void getVL(inout vec3 color, in vec3 fpos){
 
@@ -559,11 +559,11 @@ void main() {
 	#endif
 
 	doFog(color.rgb, fpos1);
-
+/*
 	#ifdef VOLUMETRIC_CLOUDS
     getVC(color.rgb, fpos2);
   #endif
-
+*/
   #ifdef VOLUMETRIC_LIGHT
     getVL(color.rgb, fpos2);
   #endif
