@@ -270,7 +270,7 @@ float getShadows(in vec3 fpos) {
 			#endif
 
 			#if SSAO_METHOD == 2
-				ao = getSSAO(fpos2);
+				ao = getSSAO(fpos);
 			#endif
 		#endif
     return vec4(indirect, ao);
