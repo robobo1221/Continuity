@@ -75,7 +75,7 @@ void main() {
 		posxz = calcParallax(posxz, tangentVector.xy);
 	#endif
 
-	if (material > 0.5) albedo = vec4(1.0, 1.0, 1.0, 1.0);
+	if (material > 0.5) albedo = vec4(1.0, 3.0, 1.0, 1.0);
 
 	bump = waterNormals(posxz, material);
 

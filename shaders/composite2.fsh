@@ -393,7 +393,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 					float F0 = mix(0.02, 0.05, water);
 					float fresnel = F0 + (1. - F0) * pow(1.-VoH,5.);
 
-					color +=  (fresnel * 0.5) * G(NoV, NoL, alpha) * rayTrace(l, p3, clip3, skyLightmap)  * VoH / (NoH * NoV);
+					color +=  (fresnel * 3.5) * G(NoV, NoL, alpha) * rayTrace(l, p3, clip3, skyLightmap)  * VoH / (NoH * NoV);
 			}
 
 			return color / float(steps);

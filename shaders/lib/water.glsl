@@ -18,7 +18,7 @@ float noise( in vec2 p ) {
 
 float wave(vec2 p) {
     p += noise2(p);
-    return 1.-abs(noise(p));
+    return 1.-abs(noise(p)) * 1.2;
 }
 
 float waveH(vec2 p, float material) {
@@ -35,7 +35,7 @@ float waveH(vec2 p, float material) {
       p *= mat2(3.2,1.2,-1.2,3.2);
       a *= .2;
       h += (wave(p+t)+wave(p-t)) * a;
-      p *= mat2(3.2,1.2,-1.2,3.2);
+      p *= mat2(5.2,1.2,-1.2,3.2);
       a *= .3;
       h += (wave(p+t)+wave(p-t)) * a;
     }

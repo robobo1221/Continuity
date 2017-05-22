@@ -231,7 +231,7 @@ vec3 waterAbsorption(vec3 fpos1, vec3 fpos2) {
 
 	float depthMap = distance(fpos1, fpos2);
 
-	return powf(waterAbsorptionColor, pow(depthMap, 1.3)* 1.1);
+	return powf(waterAbsorptionColor, pow(depthMap, 0.8)* 1.4);
 }
 
 vec3 waterScatter(vec3 fpos1, vec3 fpos2) {
@@ -241,7 +241,7 @@ vec3 waterScatter(vec3 fpos1, vec3 fpos2) {
 
 	vec3 castedSkylight = js_totalScatter();
 
-	vec3 skyLightmap 		= pow(lightmaps2.y, 4.0) * castedSkylight;
+	vec3 skyLightmap 		= pow(lightmaps2.y, 16.0) * castedSkylight;
 	vec3 shadowLightmap = getShadows(fpos2, true).r * lightColor * (1.0 - rainStrength);
 
 	vec3 waterShading		= skyLightmap + shadowLightmap;

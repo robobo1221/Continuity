@@ -293,7 +293,7 @@ vec3 burgess(vec3 x) {
     blur += toLinear(BicubicTexture(colortex5, tc.st / pow(2.0, 6.0) + vec2(0.2, 0.3)).rgb * 30.0) * 3.0;
 		blur += toLinear(BicubicTexture(colortex5, tc.st / pow(2.0, 7.0) + vec2(0.3, 0.3)).rgb * 38.0) * 2.0;
 
-    if (isEyeInWater > 0.5) blur *= 8.0;
+    if (isEyeInWater > 0.5) blur *= 16.0;
 
 		color.rgb = mix(color.rgb, blur.rgb, 0.0025);
 	}
