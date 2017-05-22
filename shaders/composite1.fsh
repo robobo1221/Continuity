@@ -372,7 +372,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 			  	noise = noise * (1.0 - rainStrength * 0.5);
 			  	noise = pow(max(1.0 - noise * 1.5 / VOLUMETRIC_CLOUDS_COVERAGE,0.),2.0) * 0.030303;
 
-		return clamp(noise * 10.0, 0.0, 1.0);
+		return clamp(noise * 50.0, 0.0, 1.0);
 	}
 
 	float expDepth(float dist){
@@ -413,7 +413,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 
 			vec3 cloudSunlight = lightColor * 10.0 * sunLightAbsorption * (1.0 + phase) * (1.0 - rainStrength * 1.0);
 
-			vec3 cloudColor = mix(cloudSunlight, ambient * (0.25 + (rainStrength * 0.5)), pow(1.0 - absorption / 1.0, 4.0f));
+			vec3 cloudColor = mix(cloudSunlight, ambient * (0.25 + (rainStrength * 0.5)), pow(1.0 - absorption / 3.0, 5.0f));
 
 				cloudColor /= 1.0 + cloudColor;
 
@@ -442,13 +442,13 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 	vec4 getClouds3D(vec3 color, vec3 p){
 
 		vec4 clouds = vec4(0.1 * lightColor, 0.0);
-		vec3 ambient = js_totalScatter() * (1.0 - rainStrength * 0.9);
+		vec3 ambient = js_totalScatter() * (1.3 - rainStrength * 0.3);
 		float phase = phaseCloud(dot(normalize(p), lightVec));
 
-		float nearPlane = 2.0;			//start to where the ray should march.
+		float nearPlane = 0.0;			//start to where the ray should march.
 		float farPlane = far; 		//End from where the ray should march.
 
-	    float increment = far / 10.0;
+	    float increment = far / 15.0;
 
 		float dither = bayer(gl_FragCoord.st);
 
@@ -473,7 +473,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 				 //result.rgb = renderGaux2(result.rgb, normal2);
 			//}
 
-			clouds.rgb = mix(clouds.rgb, result.rgb, min(result.a * VOLUMETRIC_CLOUDS_DENSITY, 1.0));
+			clouds.rgb = mix((clouds.rgb), result.rgb, min(result.a * VOLUMETRIC_CLOUDS_DENSITY, 1.0));
 			clouds.a += result.a * VOLUMETRIC_CLOUDS_DENSITY;
 
 			farPlane -= increment;
