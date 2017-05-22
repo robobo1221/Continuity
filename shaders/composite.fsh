@@ -51,15 +51,18 @@ uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 shadowModelView;
+uniform mat4 shadowModelViewInverse;
 uniform mat4 shadowProjection;
 
 uniform vec3 shadowLightPosition;
 uniform vec3 upPosition;
 uniform vec3 sunPosition;
 uniform vec3 cameraPosition;
+uniform float rainStrength;
 uniform float aspectRatio;
 uniform float viewWidth;
 uniform float viewHeight;
+uniform float far;
 uniform int worldTime;
 uniform int isEyeInWater;
 
@@ -67,6 +70,7 @@ uniform int isEyeInWater;
 #include "lib/entity_ids.glsl"
 
 #include "lib/basics.glsl"
+#include "lib/colors.glsl"
 #include "lib/time.glsl"
 
 #include "lib/noise.glsl"
@@ -75,6 +79,9 @@ uniform int isEyeInWater;
 #include "lib/shadow_positions.glsl"
 
 #include "lib/space_conversions.glsl"
+
+#include "lib/sky.glsl"
+#include "lib/PBR/diffuse.glsl"
 
 const vec2 shadowOffsets[5] = vec2[5](
 									vec2(0.0, 1.0),
@@ -143,12 +150,14 @@ float getShadows(in vec3 fpos) {
 	return shadow0;
 }
 
+
+#define hammersley(i, N) vec2( float(i) / float(N), float( bitfieldReverse(i) ) * 2.3283064365386963e-10 )
+#define tau 6.2831853071795864769252867665590
+#define circlemap(p) (vec2(cos((p).y*tau), sin((p).y*tau)) * p.x)
+#define semicirclemap(p) (vec2(cos((p).y*PI), sin((p).y*PI)) * sqrt(p.x) )
+
 #ifdef SSAO
 	#if SSAO_METHOD == 1
-
-	  #define hammersley(i, N) vec2( float(i) / float(N), float( bitfieldReverse(i) ) * 2.3283064365386963e-10 )
-	  #define tau 6.2831853071795864769252867665590
-	  #define circlemap(p) (vec2(cos((p).y*tau), sin((p).y*tau)) * p.x)
 
 	  float jaao(vec2 p) {
 		const float r = 1.3;
@@ -246,6 +255,161 @@ float getShadows(in vec3 fpos) {
 
 #endif
 
+#if   AMBIENT_LIGHTING == 1
+  vec4 getAmbientLighting(vec3 fpos) {
+    vec3 indirect = js_totalScatter();
+    return vec4(indirect, 1.0);
+  }
+#elif AMBIENT_LIGHTING == 2
+  vec4 getAmbientLighting(vec3 fpos) {
+    vec3 indirect = js_totalScatter();
+		float ao = 1.0;
+		#ifdef SSAO
+			#if SSAO_METHOD == 1
+				ao = jaao(texcoord.st);
+			#endif
+
+			#if SSAO_METHOD == 2
+				ao = getSSAO(fpos2);
+			#endif
+		#endif
+    return vec4(indirect, ao);
+  }
+#elif AMBIENT_LIGHTING == 3
+  vec2 lattice(int i, int N){
+  	float sn = fsqrt(float(N));
+  	return vec2(   mod( float(i) * PI, sn )  / sn, float(i) / float(N) );
+  }
+
+  vec3 getSkyIllumination(vec3 refNormal, vec3 normal, vec3 fpos, float horizon){
+
+  	const int ditherSize = 64;
+
+  	int index = bayer64x64(ivec2(texcoord.st*vec2(viewWidth,viewHeight)));
+
+  	vec3 tangentX = normalize(cross(vec3(0,0,1), normal));
+  	vec3 tangentY = cross(normal, tangentX);
+
+  	vec3 sky=vec3(0);
+
+    float skyDistance = far * getAtmosphere();
+
+  	int samples = 16;
+
+  	for (int i = 0; i < samples; i++) {
+
+  		vec2 a=//hammersley( i * 15 + index + 1 , 16 * samples );
+  			lattice(i * (ditherSize*ditherSize) + index, (ditherSize*ditherSize) * samples);
+  		float angle = a.y * TAU;
+
+  	    float cosx = sqrt(1.0 - a.x);
+  	    float sinx = sqrt(a.x)*horizon;
+
+  	    vec3 vector = tangentX * cos(angle) * sinx +
+             tangentY * sin(angle) * sinx + normal * cosx;
+
+        vector = normalize(vector);
+
+        vec3 ambientColor = js_getAmbient(vector) + (js_totalScatter() * (skyDistance / (1.0 + skyDistance)));
+
+  	    sky += Burley(-fpos, vector, refNormal, 0.9)*ambientColor;
+  	}
+  	return sky/float(samples);
+  }
+
+  vec4 getAmbientLighting(vec3 fpos) {
+
+		int steps = 4;
+		float radius = 8.0;
+
+  	const int ditherSize = 64;
+
+  	int index = bayer64x64(ivec2(texcoord.st*vec2(viewWidth,viewHeight)));
+
+  	vec3 p3 = toScreenSpace(texcoord.st);
+  	//vec3 normal = normalize( cross(dFdx(p3), dFdy(p3)) );
+  	vec2 clipRadius = vec2(viewHeight / viewWidth, 1.) / length(p3);
+
+  	float totalAmbient = 0.;
+
+  	float skyAngle = 0.;
+  	vec3 skyDirection = vec3(0.);
+
+  	float PdotN = dot(p3,normal1);
+
+  	//large scale accurate ao
+  	for (int i = 0; i < steps; i++) {
+  		vec2 semicirclePoint = semicirclemap(
+  			//hammersley( i * 15 + index, 16 * steps )
+  			lattice(i * (ditherSize*ditherSize) + index , (ditherSize*ditherSize) * steps)
+  		)*clipRadius;
+
+  		vec3 o1 = toScreenSpace( texcoord.st + semicirclePoint * radius ); // right sample
+  		vec3 o2 = toScreenSpace( texcoord.st - semicirclePoint * radius ); // left sample
+
+  		vec3 o3 = toScreenSpace( texcoord.st + semicirclePoint * radius / 8.); // right sample
+  		vec3 o4 = toScreenSpace( texcoord.st - semicirclePoint * radius / 8.); // left sample
+
+  		vec3 o5 = toScreenSpace( texcoord.st + semicirclePoint * radius / 8. / 8.); // right sample
+  		vec3 o6 = toScreenSpace( texcoord.st - semicirclePoint * radius / 8. / 8.); // left sample
+
+  		if(dot(normalize(o3-p3),normal1)>dot(normalize(o1-p3),normal1))
+  			o1=o3;
+
+  		if(dot(normalize(o4-p3),normal1)>dot(normalize(o2-p3),normal1))
+  			o2=o4;
+
+  		if(dot(normalize(o5-p3),normal1)>dot(normalize(o1-p3),normal1))
+  			o1=o5;
+
+  		if(dot(normalize(o6-p3),normal1)>dot(normalize(o2-p3),normal1))
+  			o2=o6;
+
+
+  		vec3 oo1 = o1-p3;
+  		float l1 = length(o1);
+  		vec3 r1 = o1/l1;
+  		o1 = min(l1, PdotN /
+  			-clamp(-dot(r1, normal1),0.,1.)
+  		) * r1;// tangent plane intersection;
+  		o1 = normalize(o1-p3);
+
+  		vec3 oo2 = o2-p3;
+  		float l2 = length(o2);
+  		vec3 r2 = o2/l2;
+  		o2 = min(l2, PdotN /
+  			-clamp(-dot(r2, normal1),0.,1.)
+  		) * r2;// tangent plane intersection;
+  		o2 = normalize(o2-p3);
+
+  		float doto = dot(o1, o2);
+
+  		doto = clamp(doto,-1.,1.); //fixes NaNing
+
+
+  		float litNormalOcclusion = facos(doto)/PI;
+  		skyAngle += facos(doto);
+  		skyDirection += normalize(o2+o1+normal1*.001);
+
+  		float distMul = max(1., max(oo1.z, oo2.z) / radius );
+  		litNormalOcclusion = 1. - (1. - litNormalOcclusion) / distMul;
+
+
+  		totalAmbient += litNormalOcclusion;
+  	}
+
+  	skyAngle /= float(steps)*PI;
+  	skyDirection = normalize(skyDirection);
+  	vec3 sky = getSkyIllumination(normal1, skyDirection, fpos, skyAngle);
+
+  	totalAmbient /= float(steps);
+
+    totalAmbient = pow(totalAmbient, mix(2.0, 6.0, 1.0 - pow(lightmaps1.y, 3.0)));
+
+  	return vec4(totalAmbient * sky, 1.0);
+  }
+#endif
+
 void main() {
 
 	vec3 fpos2 = toScreenSpace(texcoord.st, depth2);
@@ -257,6 +421,7 @@ void main() {
 
 	float ao = 1.0;
 	vec3 gi = vec3(0.0);
+	vec4 ambient = getAmbientLighting(fpos2);
 
 	#ifdef SSAO
 		#if SSAO_METHOD == 1
@@ -278,9 +443,10 @@ void main() {
   if (isnan(color)) color = vec3(0.0);
 
 
-/* DRAWBUFFERS:015 */
+/* DRAWBUFFERS:0145 */
 
   gl_FragData[0] = vec4(toGamma(color.rgb), getShadows(fpos2));
   gl_FragData[1] = vec4(aux1.rgb, encodeColor(specular));
-  gl_FragData[2] = vec4(toGamma(gi), ao);
+	gl_FragData[2] = ambient;
+  gl_FragData[3] = vec4(toGamma(gi), ao);
 }

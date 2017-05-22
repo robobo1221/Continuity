@@ -85,21 +85,15 @@ void refractTexcoord(inout vec2 coord, in vec3 fpos1, in vec3 fpos2) {
 	if (transparent > 0.5) coord.st += refractionNormals * depthFactor;
 }
 
-float getAtmosphere() {
-	float thickness = mix(pow(dot(sunVec, downVec) * 0.5 + 0.5, 3.0) * 0.001, 0.00008, rainStrength);
-	if (isEyeInWater > 0.5) thickness = 0.00005;
-	return thickness;
-}
-
 void doFog(inout vec3 color, in vec3 fpos) {
 	float indoors = 1.0 - saturate((-eyeBrightnessSmooth.y + 230) / 100.0);
 	float fogFactor  = length(fpos);
 	float thickness  = getAtmosphere();
+	if (isEyeInWater > 0.5) thickness = 0.00005;
 				fogFactor *= thickness * indoors;
 				fogFactor  = fogFactor / (1.0 + fogFactor * (1.0 + 100.0 * rainStrength));
 
-	vec3 fogColor = YxyToRGB(calculateZenithLuminanceYxy(turbidity, acos(mDot(sunVec, upVec)))) * lightColor;
-			 fogColor = powf(fogColor, CONTRAST) * BRIGHTNESS * 100.0 * (1.0 - rainStrength * 0.5);
+	vec3 fogColor = js_totalScatter();
 
 	if (isEyeInWater > 0.5) {
 		fogColor *= waterColor;
@@ -351,7 +345,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 		if (isEyeInWater < 0.5) {
 			#if SKY_MODEL == 1
-				color = getSky(dir, true);
+			color = js_getScatter(color, dir);
 			#endif
 
 			#if SKY_MODEL == 2
@@ -537,15 +531,16 @@ void main() {
 
 	if (land < 0.5) {
 		#if SKY_MODEL == 1
-			color = getSky(normalize(fpos2), true);
+			color = getStars(color, fpos2);
+			color = getGalaxy(color, fpos2);
+			color = js_getScatter(color, normalize(fpos2));
 		#endif
 
 		#if SKY_MODEL == 2
 			color = CalculateAtmosphericSky(toWorldSpace(fpos2), land) * 0.1;
+			color = getStars(color, fpos2);
+			color = getGalaxy(color, fpos2);
 		#endif
-
-		color = getStars(color, fpos2);
-		color = getGalaxy(color, fpos2);
 
 		#ifdef CLOUDS
 			color = getClouds(color, fpos2);

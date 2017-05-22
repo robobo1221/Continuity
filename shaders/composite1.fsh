@@ -11,6 +11,7 @@ const float 	shadowDistance 			    	= 240.0;
 
 // Buffer Mipmaps
 const bool    colortex0MipmapEnabled		= true;
+const bool    colortex4MipmapEnabled		= true;
 const bool    colortex5MipmapEnabled		= true;
 const bool    shadowtex0MipmapEnabled	  = true;
 
@@ -20,6 +21,7 @@ uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D colortex3;
+uniform sampler2D colortex4;
 uniform sampler2D colortex5;
 
 uniform sampler2D depthtex0;
@@ -211,6 +213,20 @@ float filterAO() {
   return ao;
 }
 
+vec4 getAmbientLighting() {
+	vec4 indirect = vec4(1.0);
+	#if 	AMBIENT_LIGHTING == 1
+		indirect = texture2D(colortex4, texcoord.st);
+	#elif AMBIENT_LIGHTING == 2
+		indirect.rgb = texture2D(colortex4, texcoord.st).rgb;
+		indirect.a	 = texture2DLod(colortex4, texcoord.st, 1.5).a;
+	#elif AMBIENT_LIGHTING == 3
+		indirect = texture2DLod(colortex4, texcoord.st, 1.5);
+	#endif
+
+	return indirect;
+}
+
 vec3 waterAbsorption(vec3 fpos1, vec3 fpos2) {
 
 	float depthMap = distance(fpos1, fpos2);
@@ -223,9 +239,7 @@ vec3 waterScatter(vec3 fpos1, vec3 fpos2) {
 	float metricDepth2 = -fpos2.z;
 	float depthMap = 0.1 * saturate(metricDepth2 - metricDepth1);
 
-	vec3 castedSkylight = getSky(normal2, false);
-	vec3 avgSkylight    = YxyToRGB(calculateZenithLuminanceYxy(turbidity, acos(mDot(sunVec, upVec)))) * lightColor * (1.0 - rainStrength * 0.5);
-	castedSkylight 			= mix(castedSkylight, powf(avgSkylight, CONTRAST) * BRIGHTNESS, 0.1);
+	vec3 castedSkylight = js_totalScatter();
 
 	vec3 skyLightmap 		= pow(lightmaps2.y, 4.0) * castedSkylight;
 	vec3 shadowLightmap = getShadows(fpos2, true).r * lightColor * (1.0 - rainStrength);
@@ -258,17 +272,15 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 	float diffuse = Burley(-normalize(fpos2), lightVec, normal1, 0.5);
 	vec3 specular = BRDF(normal1, normalize(-fpos1), lightVec, 0.4, vec3(0.02));
 
+	vec4 ambient = getAmbientLighting();
+
   float ao = mix(filterAO(), 1.0, emitter);
-	vec3 castedSkylight = getSky(normalize(normal1), false);
-	vec3 avgSkylight    = YxyToRGB(calculateZenithLuminanceYxy(turbidity, acos(mDot(sunVec, upVec)))) * lightColor * (1.0 - rainStrength * 0.5);
-	castedSkylight 			= mix(castedSkylight, powf(avgSkylight, CONTRAST) * BRIGHTNESS, 0.9);
 
   vec3 torchLightmap 	= ((1.0 / (1.0 - pow(mix(lightmaps1.x, 0.8, emitter), 3.0)) - 1.0)
 											+ emitter * pow(length(color), 7.0) * 7.0) *
 	 										torchColor * pow(ao, mix(0.0, 9.0, 1.0 - pow(lightmaps1.x, 3.0)));
 
-  vec3 skyLightmap 		= pow(lightmaps1.y, 4.0) *
-											castedSkylight * pow(ao, mix(1.0, 4.0, 1.0 - pow(lightmaps1.y, 3.0)))+vec3(0.0);
+  vec3 skyLightmap = pow(lightmaps1.y, 4.0) * ambient.rgb * pow(ambient.a, mix(1.0, 4.0, 1.0 - pow(lightmaps1.y, 3.0)));
 
 	vec3 shadowLightmap = getShadows(fpos2, false) * lightColor * (1.0 - rainStrength);
 
@@ -430,7 +442,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 	vec4 getClouds3D(vec3 color, vec3 p){
 
 		vec4 clouds = vec4(0.1 * lightColor, 0.0);
-		vec3 ambient = YxyToRGB(calculateZenithLuminanceYxy(turbidity, acos(mDot(sunVec, upVec)))) * lightColor * (1.0 - rainStrength * 0.9);
+		vec3 ambient = js_totalScatter() * (1.0 - rainStrength * 0.9);
 		float phase = phaseCloud(dot(normalize(p), lightVec));
 
 		float nearPlane = 2.0;			//start to where the ray should march.
@@ -448,7 +460,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 
 			vec4 wpos = getVolumetricCloudPosition(texcoord.st, farPlane);
 
-			vec4 result = getVolumetricCloudsColor(wpos.rgb, p, powf(ambient, CONTRAST) * BRIGHTNESS, phase);
+			vec4 result = getVolumetricCloudsColor(wpos.rgb, p, ambient, phase);
 				 result.a = clamp(result.a * VOLUMETRIC_CLOUDS_DENSITY, 0.0, 1.0);
 
 			float volumetricDistance = length(wpos.xyz - cameraPosition.xyz);
