@@ -39,7 +39,7 @@
   #define VOLUMETRIC_CLOUDS_COVERAGE 1.0 //[0.5 0.75 1.0 1.25 1.5 1.75 2.0]
   #define VOLUMETRIC_CLOUDS_HEIGHT 160.0 //[60.0 80.0 100.0 120.0 140.0 160.0 180.0 200.0 220.0 240.0 260.0]
 
-#define SKY_MODEL 1 //[1 2] 1: Fast Perez, good for looks + performance. 2: BROOOOCE, slow but beautiful
+#define SKY_MODEL 1 //[1 2] 1: JOOOODIE, faster but still realistic. 2: BROOOOCE, slow but beautiful
 #define HORIZON_HEIGHT 5 // [5 62 72 80 128 192 208]
 
 #define BLOOM
