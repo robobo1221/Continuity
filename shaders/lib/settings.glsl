@@ -12,6 +12,8 @@
 
   #define SSAO_STRENGTH 0.2 //[0.2 0.5 1.0 2.0 3.0 4.0 5.0]
 
+#define AMBIENT_LIGHTING 3 //[1 2 3] 1: Ambient light approximation, no AO. 2: Ambient light approximation with AO. 3: Full ambient diffuse
+
 #define VOLUMETRIC_LIGHT
   #define COLORED_VL
   #define VL_DISTANCE 256.0
@@ -67,7 +69,7 @@
 //#define LENS_DISTORTION
   #define LDIST_AMOUNT 0.8
 
-#define AVERAGE_EXPOSURE_STRENGTH 1.15 
+#define AVERAGE_EXPOSURE_STRENGTH 1.15
 
 #define FILM_GRAIN
 	#define FILM_GRAIN_STRENGTH 0.2 //[0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.1]

@@ -1,120 +1,3 @@
-
-#define CONTRAST 1.4
-#define BRIGHTNESS 0.005
-
-float turbidity = mix(2.0, 10.0, rainStrength);
-
-vec3 YxyToXYZ( in vec3 Yxy )
-{
-	float Y = Yxy.r;
-	float x = Yxy.g;
-	float y = Yxy.b;
-
-	float X = x * ( Y / y );
-	float Z = ( 1.0 - x - y ) * ( Y / y );
-
-	return vec3(X,Y,Z);
-}
-
-vec3 XYZToRGB( in vec3 XYZ )
-{
-	// CIE/E
-	mat3 M = mat3
-	(
-		 2.3706743, -0.9000405, -0.4706338,
-		-0.5138850,  1.4253036,  0.0885814,
- 		 0.0052982, -0.0146949,  1.0093968
-	);
-
-	return XYZ * M;
-}
-
-
-vec3 YxyToRGB( in vec3 Yxy )
-{
-	vec3 XYZ = YxyToXYZ( Yxy );
-	vec3 RGB = XYZToRGB( XYZ );
-	return RGB;
-}
-
-void calculatePerezDistribution( in float t, out vec3 A, out vec3 B, out vec3 C, out vec3 D, out vec3 E )
-{
-	A = vec3(  0.1787 * t - 1.4630, -0.0193 * t - 0.2592, -0.0167 * t - 0.2608 );
-	B = vec3( -0.3554 * t + 0.4275, -0.0665 * t + 0.0008, -0.0950 * t + 0.0092 );
-	C = vec3( -0.0227 * t + 5.3251, -0.0004 * t + 0.2125, -0.0079 * t + 0.2102 );
-	D = vec3(  0.1206 * t - 2.5771, -0.0641 * t - 0.8989, -0.0441 * t - 1.6537 );
-	E = vec3( -0.0670 * t + 0.3703, -0.0033 * t + 0.0452, -0.0109 * t + 0.0529 );
-}
-
-vec3 calculateZenithLuminanceYxy( in float t, in float thetaS )
-{
-	float chi  	 	= ( 4.0 / 9.0 - t / 120.0 ) * ( PI - 2.0 * thetaS );
-	float Yz   	 	= ( 4.0453 * t - 4.9710 ) * tan( chi ) - 0.2155 * t + 2.4192;
-
-	float theta2 	= thetaS * thetaS;
-    float theta3 	= theta2 * thetaS;
-    float T 	 	= t;
-    float T2 	 	= t * t;
-
-	float xz =
-      ( 0.00165 * theta3 - 0.00375 * theta2 + 0.00209 * thetaS + 0.0)     * T2 +
-      (-0.02903 * theta3 + 0.06377 * theta2 - 0.03202 * thetaS + 0.00394) * T +
-      ( 0.11693 * theta3 - 0.21196 * theta2 + 0.06052 * thetaS + 0.25886);
-
-    float yz =
-      ( 0.00275 * theta3 - 0.00610 * theta2 + 0.00317 * thetaS + 0.0)     * T2 +
-      (-0.04214 * theta3 + 0.08970 * theta2 - 0.04153 * thetaS + 0.00516) * T +
-      ( 0.15346 * theta3 - 0.26756 * theta2 + 0.06670 * thetaS + 0.26688);
-
-	return vec3( Yz, xz, yz );
-}
-
-vec3 calculatePerezLuminanceYxy( in float theta, in float gamma, in vec3 A, in vec3 B, in vec3 C, in vec3 D, in vec3 E )
-{
-	return ( 1.0 + A * exp( B / cos( theta ) ) ) * ( 1.0 + C * exp( D * gamma ) + E * cos( gamma ) * cos( gamma ) );
-}
-
-vec3 getSky(in vec3 viewPos, bool doSun)
-{
-	vec3 A, B, C, D, E;
-	calculatePerezDistribution(turbidity, A, B, C, D, E);
-
-	float thetaS  = facos(mDot(sunVec,  upVec));
-	float thetaM  = facos(mDot(moonVec, upVec));
-	float thetaE  = facos(mDot(viewPos, upVec));
-	float gammaES = facos(mDot(sunVec,  viewPos));
-	float gammaEM = facos(mDot(moonVec, viewPos));
-
-	vec3 YzS = calculateZenithLuminanceYxy(turbidity, thetaS);
-	vec3 YzM = calculateZenithLuminanceYxy(turbidity, thetaM);
-
-	vec3 fThetaGammaS = calculatePerezLuminanceYxy(thetaE, gammaES, A, B, C, D, E );
-	vec3 fZeroThetaS  = calculatePerezLuminanceYxy(0.0,    thetaS,  A, B, C, D, E );
-
-	vec3 fThetaGammaM = calculatePerezLuminanceYxy(thetaE, gammaEM, A, B, C, D, E );
-	vec3 fZeroThetaM  = calculatePerezLuminanceYxy(0.0,    thetaM,  A, B, C, D, E );
-
-  float sun  = smoothstep(0.05, 0.04, facos(mDot(sunVec,  viewPos)));
-  float moon = smoothstep(0.05, 0.04, facos(mDot(moonVec, viewPos)));
-
-  float horizon = smoothstep(0.0, 0.3, mDot(viewPos, upVec));
-
-	vec3 YpS = YzS * (fThetaGammaS / fZeroThetaS);
-	vec3 YpM = YzM * (fThetaGammaM / fZeroThetaM);
-
-  vec3 sky  = YxyToRGB(YpS) * (sunColor  + 0.005);
-			 sky += YxyToRGB(YpM) * (moonColor + 0.002);
-
-	if (doSun) {
-  	sky = mix(sky, sunColor  * 1000.0, sun  * horizon);
-  	sky = mix(sky, moonColor * 10000.0, moon * horizon);
-	}
-
-	return powf(sky, CONTRAST) * BRIGHTNESS * (1.0 - rainStrength * 0.7);
-}
-
-
-
 #define iSteps 12
 
 const float expCoeff = 1.0;
@@ -232,4 +115,149 @@ vec3 CalculateAtmosphericSky(vec3 worldSpacePosition, float visibility) {
 	vec3 worldSunPosition = shadowModelViewInverse[2].xyz * (1.0 - isNight * 2.0);
 
 	return ComputeAtmosphericSky(worldSpacePosition, worldPosition, worldSunPosition, visibility, 3.0);
+}
+
+float getAtmosphere() {
+	float thickness = mix(pow(dot(sunVec, downVec) * 0.5 + 0.5, 3.0) * 0.001, 0.00008, rainStrength);
+	return thickness;
+}
+
+float rainFix = (1.0 - rainStrength * 0.9);
+
+//config
+#define atmosphereHeight 8000. * (1.0 + getAtmosphere() * 500.0) // actual thickness of the atmosphere
+#define earthRadius 6371000.    // actual radius of the earth
+#define mieMultiplier 2.
+#define ozoneMultiplier 1.      // 1. for physically based
+#define rayleighDistribution 8. //physically based
+#define mieDistribution 1.8 * (1.0 + getAtmosphere() * 5000.0)     //physically based
+#define rayleighCoefficient vec3(5.8e-6,1.35e-5,3.31e-5) // Physically based (Bruneton, Neyret)
+#define ozoneCoefficient (vec3(3.426,8.298,.356) * 6e-5 / 100.) // Physically based (Kutz)
+#define mieCoefficient ( 3e-6 * mieMultiplier) //good default
+#define up gbufferModelView[1].xyz
+
+vec2 js_getThickness2(vec3 rd){
+    vec2 sr = earthRadius + vec2(
+        atmosphereHeight,
+        atmosphereHeight * mieDistribution / rayleighDistribution
+    );
+    vec3 ro = -up * earthRadius;
+    float b = dot(rd, ro);
+    float t = b * b - dot(ro, ro);
+    return b + sqrt( sr * sr + t );
+}
+
+#define getEarth(a) pow(smoothstep(-.1,.1,dot(up,a)),1.)
+// Improved Rayleigh phase for single scattering (Elek)
+#define js_phaseRayleigh(a) ( .4 * (a) + 1.12 )
+
+float phaseMie(float x){
+    const vec3 c = vec3(.256098,.132268,.010016);
+    const vec3 d = vec3(-1.5,-1.74,-1.98);
+    const vec3 e = vec3(1.5625,1.7569,1.9801);
+    float b = x * x + 1.;
+    vec3 f = b * c / pow( d * x + e, vec3(1.5));
+    return dot(f,vec3(.33333333333));
+}
+
+float phaseMie2(float x){
+    const vec3 c = vec3(.256098,.132268,.010016);
+    const vec3 d = vec3(-1.5,-1.74,-1.98);
+    const vec3 e = vec3(1.5625,1.7569,1.9801);
+    float b = x * x + 1.;
+    vec3 f = b * c / pow( d * x + e, vec3(1.5));
+    return dot(f.xy,vec2(.33333333333));
+}
+
+#define js_absorb(a) exp( -(a).x * (  ozoneCoefficient * ozoneMultiplier + rayleighCoefficient) - 1.11 * (a).y * mieCoefficient)
+
+const float js_steps = 8.;
+
+vec2 js_sunThickness  = js_getThickness2(sunVec)  / js_steps;
+vec2 js_moonThickness = js_getThickness2(moonVec) / js_steps;
+
+vec3 js_sunAbsorb  = js_absorb(js_sunThickness)  * getEarth(sunVec)  * 0.9;
+vec3 js_moonAbsorb = js_absorb(js_moonThickness) * getEarth(moonVec) * 0.01;
+vec3 js_moonColor = vec3(0.4,0.6,0.9) * 0.003;
+
+vec3 lightColor = (powf(js_sunAbsorb / 0.9, js_steps) * sunFade) + (powf(js_moonAbsorb / 0.01, js_steps) * js_moonColor * moonFade);
+
+
+vec3 js_getScatter(vec3 color, vec3 V) {
+    vec2 thickness = js_getThickness2(V) / js_steps;
+
+		float dotVS = dot(V, sunVec);
+    float dotVM = dot(V, moonVec);
+
+    vec3 viewAbsorb = js_absorb(thickness);
+    vec4 scatterCoeff = 1. - exp(-thickness.xxxy * vec4(rayleighCoefficient,mieCoefficient));
+
+		float rayleighPhaseS = js_phaseRayleigh(dotVS);
+    float rayleighPhaseM = js_phaseRayleigh(dotVM);
+
+		float miePhaseS = phaseMie2(dotVS);
+    float miePhaseM = phaseMie2(dotVM);
+
+		vec3 scatterS = scatterCoeff.xyz * rayleighPhaseS + (scatterCoeff.w * miePhaseS);
+    vec3 scatterM = scatterCoeff.xyz * rayleighPhaseM + (scatterCoeff.w * miePhaseM);
+
+		vec3 sun = sin(max(dot(sunVec,   V) - 0.9985, 0.0) / 0.0015 * PI * 0.5) * js_sunAbsorb  * 100.0;
+		vec3 moon = sin(max(dot(moonVec, V) - 0.9985, 0.0) / 0.0015 * PI * 0.5) * js_moonAbsorb * 100.0 * (js_moonColor * 100.0);
+		vec3 skyColorS = color + sun;
+    vec3 skyColorM = color + moon;
+
+    for(int i=0;i<int(js_steps);i++){
+				scatterS *= js_sunAbsorb;
+        scatterM *= js_moonAbsorb * js_moonColor * 100.0;
+
+				skyColorS = skyColorS * viewAbsorb + scatterS;
+        skyColorM = skyColorM * viewAbsorb + scatterM;
+    }
+
+    return skyColorS + skyColorM;
+}
+
+vec3 js_getAmbient(vec3 V) {
+	vec2 thickness = js_getThickness2(V) / js_steps;
+
+	float dotVS = dot(V, sunVec);
+	float dotVM = dot(V, moonVec);
+
+	vec3 viewAbsorb = js_absorb(thickness);
+	vec4 scatterCoeff = 1. - exp(-thickness.xxxy * vec4(rayleighCoefficient,mieCoefficient));
+
+	float rayleighPhaseS = js_phaseRayleigh(dotVS);
+	float rayleighPhaseM = js_phaseRayleigh(dotVM);
+
+	float miePhaseS = phaseMie2(dotVS);
+	float miePhaseM = phaseMie2(dotVM);
+
+	vec3 scatterS = scatterCoeff.xyz * rayleighPhaseS + (scatterCoeff.w * miePhaseS);
+	vec3 scatterM = scatterCoeff.xyz * rayleighPhaseM + (scatterCoeff.w * miePhaseM);
+
+	vec3 skyColorS = vec3(0.0);
+	vec3 skyColorM = vec3(0.0);
+
+	float earth = pow(1.0 - mDot(downVec, V), 2.0);
+
+	for(int i=0;i<int(js_steps);i++){
+			scatterS *= js_sunAbsorb;
+			scatterM *= js_moonAbsorb;
+
+			skyColorS = skyColorS * viewAbsorb + scatterS;
+			skyColorM = skyColorM * viewAbsorb + scatterM;
+	}
+
+	return (skyColorS + skyColorM);
+}
+
+vec3 js_totalScatter() {
+	vec2 thickness = js_getThickness2(upVec);
+	vec4 scatterCoeff = 1. - exp(-thickness.xxxy * vec4(rayleighCoefficient,mieCoefficient));
+	vec3 approxScatter = (js_sunAbsorb + js_moonAbsorb) * phaseMie2(0.0);
+	return (scatterCoeff.rgb * js_sunAbsorb) + (scatterCoeff.rgb * js_moonAbsorb) + approxScatter;
+}
+
+vec3 js_sunColor(vec3 V, vec3 L) {
+    return js_absorb(js_getThickness2(L)) * getEarth(L);
 }

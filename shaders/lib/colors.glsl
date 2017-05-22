@@ -5,7 +5,7 @@ float moonFade = smoothstep(0.0, 0.3, mDot(moonVec, upVec));
 
 vec3 sunColor   = powf(skyAbsorbance, pow(1.0 + dot(sunVec, downVec), 1.5)) * sunFade;
 vec3 moonColor  = vec3(0.08,0.11,0.15) * 0.14 * moonFade;
-vec3 lightColor = sunColor + moonColor;
+//vec3 lightColor = sunColor + moonColor;
 
 vec3 torchColor = vec3(0.5,0.33,0.15) * 0.1;
 vec3 waterColor = vec3(0.0,0.2,0.15);
