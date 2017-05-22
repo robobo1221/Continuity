@@ -12,7 +12,7 @@
 
   #define SSAO_STRENGTH 0.2 //[0.2 0.5 1.0 2.0 3.0 4.0 5.0]
 
-#define AMBIENT_LIGHTING 3 //[1 2 3] 1: Ambient light approximation, no AO. 2: Ambient light approximation with AO. 3: Full ambient diffuse
+#define AMBIENT_LIGHTING 2 //[1 2 3] 1: Ambient light approximation, no AO. 2: Ambient light approximation with AO. 3: Full ambient diffuse
 
 #define VOLUMETRIC_LIGHT
   #define COLORED_VL
