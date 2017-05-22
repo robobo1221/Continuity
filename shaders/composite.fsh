@@ -262,7 +262,7 @@ float getShadows(in vec3 fpos) {
   }
 #elif AMBIENT_LIGHTING == 2
   vec4 getAmbientLighting(vec3 fpos) {
-    vec3 indirect = js_totalScatter();
+    vec3 indirect = js_totalScatter() * 0.4;
 		float ao = 1.0;
 		#ifdef SSAO
 			#if SSAO_METHOD == 1
