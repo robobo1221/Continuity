@@ -113,7 +113,7 @@ vec3 getStars(vec3 color, vec3 fpos) {
 
 	vec3 starCoord  = wpos * (50.0 / (wpos.y));
 			 starCoord *= mix(1.0, horizon, 1.0 - horizon);
-	vec2 coord			= (starCoord.xz) * 0.006;
+	vec2 coord			= (starCoord.xz) * 0.006 + frameTimeCounter * 0.001;
 
 	float noise  = texture2D(noisetex, fract(coord.xy/2.0)).r;
 				noise += texture2D(noisetex, fract(coord.xy)).r/2.0;
