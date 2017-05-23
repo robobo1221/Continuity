@@ -39,10 +39,10 @@ float waveH(vec2 p, float material) {
       a *= .3;
       h += (wave(p+t)+wave(p-t)) * a;
     }
-    
+
     #ifdef ROUGH_WATER
       roughness = noise((p + t * 50.0) * 100.0) * 0.001;
     #endif
 
-    return (h) * mix(0.15, 0.5, material) + roughness;
+    return (h) * mix(0.05, 0.5, material) + roughness;
 }
