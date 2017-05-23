@@ -82,7 +82,7 @@ void refractTexcoord(inout vec2 coord, in vec3 fpos1, in vec3 fpos2) {
 
 	float depthFactor = (metricDepth2 - metricDepth1) * 0.1;
 				depthFactor = depthFactor / (1.0 + depthFactor);
-				depthFactor = depthFactor / (1.0 + metricDepth1) * 15.0;
+				depthFactor = depthFactor / (1.0 + metricDepth1) * 10.0;
 
 	if (transparent > 0.5) coord.st += refractionNormals * depthFactor;
 }
