@@ -237,7 +237,7 @@ vec3 waterAbsorption(vec3 fpos1, vec3 fpos2) {
 vec3 waterScatter(vec3 fpos1, vec3 fpos2) {
 	float metricDepth1 = -fpos1.z;
 	float metricDepth2 = -fpos2.z;
-	float depthMap = 0.1 * saturate(metricDepth2 - metricDepth1);
+	float depthMap = 0.05 * saturate(metricDepth2 - metricDepth1);
 
 	vec3 castedSkylight = js_totalScatter();
 

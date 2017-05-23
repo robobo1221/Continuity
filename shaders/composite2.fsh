@@ -75,12 +75,14 @@ void deferredRender(inout vec3 color) {
 }
 
 void refractTexcoord(inout vec2 coord, in vec3 fpos1, in vec3 fpos2) {
-	vec2 refractionNormals = decodeNormal(texture2D(colortex3, coord.st).b).xy;
+	vec2 refractionNormals = decodeNormal(texture2D(colortex3, texcoord.st).b).xy;
 
 	float metricDepth1 = -fpos1.z;
 	float metricDepth2 = -fpos2.z;
 
-	float depthFactor = 0.5 * saturate(metricDepth2 - metricDepth1) / (1.0 + metricDepth1);
+	float depthFactor = (metricDepth2 - metricDepth1) * 0.1;
+				depthFactor = depthFactor / (1.0 + depthFactor);
+				depthFactor = depthFactor / (1.0 + metricDepth1) * 15.0;
 
 	if (transparent > 0.5) coord.st += refractionNormals * depthFactor;
 }
@@ -393,7 +395,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 					float F0 = mix(0.02, 0.05, water);
 					float fresnel = F0 + (1. - F0) * pow(1.-VoH,5.);
 
-					color +=  (fresnel * 3.5) * G(NoV, NoL, alpha) * rayTrace(l, p3, clip3, skyLightmap)  * VoH / (NoH * NoV);
+					color +=  (fresnel) * G(NoV, NoL, alpha) * rayTrace(l, p3, clip3, skyLightmap)  * VoH / (NoH * NoV);
 			}
 
 			return color / float(steps);
@@ -527,6 +529,13 @@ void main() {
 
 
 	vec3 color = toLinear(texture2D(colortex0, refractedTC.st).rgb);
+	if (water > 0.5) {
+		vec2 refraction = vec2(0.0);
+		refractTexcoord(refraction, fpos1, fpos2);
+		color.r = pow(texture2D(colortex0, texcoord.st + refraction * 1.0).r, 2.2);
+		color.g = pow(texture2D(colortex0, texcoord.st + refraction * 1.2).g, 2.2);
+		color.b = pow(texture2D(colortex0, texcoord.st + refraction * 1.4).b, 2.2);
+	}
 	if (isnan(color)) toLinear(texture2D(colortex0, texcoord.st).rgb);
 
 	if (land < 0.5) {
