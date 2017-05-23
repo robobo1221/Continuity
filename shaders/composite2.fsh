@@ -180,7 +180,7 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 
 	noise = max(noise * vec3(1.0, 0.7, 0.2) - 0.3,1.0);
 
-	return color + noise * pow(factor, 10.0) * horizon * 0.05 * moonFade;
+	return color + noise * pow(factor, 10.0) * horizon * 0.05;
 }
 
 #ifdef CLOUDS
