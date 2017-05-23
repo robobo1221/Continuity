@@ -178,7 +178,7 @@ vec2 js_moonThickness = js_getThickness2(moonVec) / js_steps;
 
 vec3 js_sunAbsorb  = js_absorb(js_sunThickness)  * getEarth(sunVec)  * 0.9;
 vec3 js_moonAbsorb = js_absorb(js_moonThickness) * getEarth(moonVec) * 0.01;
-vec3 js_moonColor = vec3(0.4,0.6,0.9) * 0.003;
+vec3 js_moonColor = vec3(0.9,0.6,0.3) * 0.015;
 
 vec3 lightColor = (powf(js_sunAbsorb / 0.9, js_steps) * sunFade) + (powf(js_moonAbsorb / 0.01, js_steps) * js_moonColor * moonFade);
 

@@ -174,11 +174,11 @@ vec3 getGalaxy(vec3 color, vec3 fpos) {
 	vec3 coord  = wpos * (50.0 / (wpos.y));
 			 coord *= mix(1.0, horizon, 1.0 - horizon);
 
-	vec3 noise  = vec3(pow(1.0 - waveH(coord.xz * 0.2), 5.0)) * 0.2;
-			 noise += pow(waveH(coord.xz * 0.05), 1.0) * 2.0;
+	vec3 noise  = vec3(pow(1.0 - waveH(coord.xz * 0.1), 5.0)) * 3.2;
+			 noise += pow(waveH(coord.xz * 1.05), 1.0) * 2.0;
 			 noise += pow(waveH(coord.xz * 0.01), 1.0) * 2.0;
 
-	noise = max(noise * vec3(1.0, 0.2, 0.8) - 0.3,0.0);
+	noise = max(noise * vec3(1.0, 0.7, 0.2) - 0.3,1.0);
 
 	return color + noise * pow(factor, 10.0) * horizon * 0.05 * moonFade;
 }
