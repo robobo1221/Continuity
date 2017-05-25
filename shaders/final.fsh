@@ -12,6 +12,7 @@ varying vec4 texcoord;
 uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex5;
+uniform sampler2D colortex6;
 
 uniform sampler2D depthtex0;
 uniform sampler2D depthtex1;
@@ -320,6 +321,23 @@ vec3 burgess(vec3 x) {
 	}
 #endif
 
+#ifdef WATERMARK
+  void waterMark(inout vec3 color) {
+    const vec2 res = vec2(362.0, 204);
+
+    vec2 coord = texcoord.st;
+    coord.y = 1.0 - coord.y;
+
+    #if   WMARK_LOCATION == 1
+      coord = coord.st * vec2(viewWidth, viewHeight) / res;
+    #elif WMARK_LOCATION == 2
+      coord = ((coord.st * 2.0 - 1.0) * vec2(viewWidth, viewHeight) / res) * 0.5 + 0.5;
+    #endif
+
+    vec3 texture = toLinear(texture2D(colortex6, saturate(coord)).rgb);
+    color += texture;
+  }
+#endif
 
 void main() {
 
@@ -346,6 +364,10 @@ void main() {
 
   #ifdef EDGE_SHARPENING
     sharpen(color.rgb, newTC);
+  #endif
+
+  #ifdef WATERMARK
+    waterMark(color.rgb);
   #endif
 
 	//robobo1221sTonemap(color);
