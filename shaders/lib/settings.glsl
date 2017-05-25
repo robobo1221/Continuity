@@ -77,3 +77,6 @@
 //#define EDGE_SHARPENING
 
 #define TONEMAP_PRESET 5 //[1 2 3 4 5 6]
+
+#define WATERMARK
+  #define WMARK_LOCATION 2 //[1 2] //1: Top left. 2: Centered
