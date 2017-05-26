@@ -290,7 +290,7 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 
 	vec3 reflectedLight = vec3(0.0);
 	#ifdef GI
-		reflectedLight		= toLinear(texture2DLod(colortex5, texcoord.st, 2.0).rgb) * lightColor * (1.0 - rainStrength);
+		reflectedLight		= toLinear(texture2DLod(colortex5, texcoord.st, 2.5).rgb) * lightColor * (1.0 - rainStrength);
 	#endif
 
   vec3 finalShading = torchLightmap + skyLightmap + shadowLightmap + reflectedLight + SSS;

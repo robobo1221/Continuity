@@ -429,8 +429,8 @@ float getShadows(in vec3 fpos) {
 
     vec4 shadowPosition = getShadowSpace(depth1, texcoord.st);
 
-    for (int i = 1; i < 6; i++){
-        vec2 offset = (vec2(float(i)) + dither) / 512.0 * rotate(dither * PI * 2.0);
+    for (int i = 1; i < 8; i++){
+        vec2 offset = (vec2(float(i)) + dither) / 512.0 * 0.5 * rotate(dither * PI * 2.0);
         offset *= 1.0 + length(offset);
 
         vec4 offsetCoord = vec4(shadowPosition.rg + offset, 0.0, 0.0);
