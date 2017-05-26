@@ -14,6 +14,8 @@
 
 #define AMBIENT_LIGHTING 2 //[1 2 3] 1: Ambient light approximation, no AO. 2: Ambient light approximation with AO. 3: Full ambient diffuse
 
+#define GI
+
 #define VOLUMETRIC_LIGHT
   #define COLORED_VL
   #define VL_DISTANCE 256.0
