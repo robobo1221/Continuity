@@ -288,7 +288,12 @@ void doShading(inout vec3 color, vec3 fpos1, vec3 fpos2) {
 
 	shadowLightmap *= diffuse;
 
-  vec3 finalShading = torchLightmap + skyLightmap + shadowLightmap + SSS;
+	vec3 reflectedLight = vec3(0.0);
+	#ifdef GI
+		reflectedLight		= toLinear(texture2DLod(colortex5, texcoord.st, 2.0).rgb) * lightColor * (1.0 - rainStrength);
+	#endif
+
+  vec3 finalShading = torchLightmap + skyLightmap + shadowLightmap + reflectedLight + SSS;
 
   color *= finalShading;
   color = nightDesaturation(color,lightmaps1*vec2(2.0, 1.0));

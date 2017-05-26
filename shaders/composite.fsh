@@ -29,6 +29,11 @@ const bool 		shadowHardwareFiltering = false;
 const int		  shadowMapResolution		  = 2048;
 const float 	shadowDistance 			    = 240.0;
 
+const bool 		shadowcolor0Mipmap = true;
+const bool 		shadowcolor0Nearest = false;
+const bool 		shadowcolor1Mipmap = true;
+const bool 		shadowcolor1Nearest = false;
+
 varying vec4 texcoord;
 
 uniform sampler2D colortex0;
@@ -41,7 +46,7 @@ uniform sampler2D depthtex1;
 
 uniform sampler2D shadowtex0;
 uniform sampler2D shadowtex1;
-uniform sampler2D shadowcolor0;
+uniform sampler2DShadow shadowcolor0;
 uniform sampler2D shadowcolor1;
 
 uniform sampler2D noisetex;
@@ -410,6 +415,56 @@ float getShadows(in vec3 fpos) {
   }
 #endif
 
+#ifdef GI
+  vec3 getGI(){
+    float weight = 0.0;
+    vec3 indirectLight = vec3(0.0);
+
+    float dither = bayer(gl_FragCoord.st);
+    mat2 rotDither = rotate(dither);
+
+    vec4 gn = gbufferModelViewInverse * vec4(normal1.xyz, 0.0f);
+       gn = shadowModelView * gn;
+       gn.xyz = normalize(gn.xyz);
+
+    vec4 shadowPosition = getShadowSpace(depth1, texcoord.st);
+
+    for (int i = 1; i < 6; i++){
+        vec2 offset = (vec2(float(i)) + dither) / 512.0 * rotate(dither * PI * 2.0);
+        offset *= 1.0 + length(offset);
+
+        vec4 offsetCoord = vec4(shadowPosition.rg + offset, 0.0, 0.0);
+        vec3 lookupCoord = biasedShadows(offsetCoord).xyz;
+
+        vec3 normalSample = texture2D(shadowcolor1, lookupCoord.xy).rgb;
+            normalSample.x = -normalSample.x;
+            normalSample.y = -normalSample.y;
+
+        float depthSample = texture2DLod(shadowtex1, lookupCoord.xy, 2).x;
+
+        depthSample = -2.5 + 5.0 * depthSample;
+        vec3 samplePos = vec3(offsetCoord.x, offsetCoord.y, depthSample);
+        vec3 lightVector = normalize(samplePos.xyz - shadowPosition.xyz);
+
+        float dist = length(samplePos.xyz - shadowPosition.xyz);
+
+        float dotProduct = max(dot(lightVector * vec3(1.0, 1.0, -1.0), gn.rgb), 0.0);
+        float sampleWeight = mDot(lightVector, normalSample);
+
+        const float falloffPower = 1.5f;
+        float distanceWeight = (1.0f / (pow(dist * (62260.0f), falloffPower) + 100.1f));
+            distanceWeight *= pow(length(offset), 2.0) * 50000.0 + 1.0;
+
+        indirectLight += toLinear(shadow2DLod(shadowcolor0, lookupCoord, 4.0).rgb) * sampleWeight * dotProduct * distanceWeight;
+
+        weight++;
+    }
+    indirectLight /= weight;
+
+    return max(indirectLight, 0.0) * 140000.0;
+  }
+#endif
+
 void main() {
 
 	vec3 fpos2 = toScreenSpace(texcoord.st, depth2);
@@ -437,7 +492,7 @@ void main() {
 	#endif
 
 	#ifdef GI
-    if (land > 0.5) gi = getSSGI();
+    if (land > 0.5) gi = getGI();
   #endif
 
   if (isnan(color)) color = vec3(0.0);
