@@ -416,53 +416,66 @@ float getShadows(in vec3 fpos) {
 #endif
 
 #ifdef GI
-  vec3 getGI(){
-    float weight = 0.0;
-    vec3 indirectLight = vec3(0.0);
+	vec3 getGI(vec3 viewSpace){
 
-    float dither = bayer(gl_FragCoord.st);
-    mat2 rotDither = rotate(dither);
+			float weight = 0.0;
+			vec3 indirectLight = vec3(0.0);
 
-    vec4 gn = gbufferModelViewInverse * vec4(normal1.xyz, 0.0f);
-       gn = shadowModelView * gn;
-       gn.xyz = normalize(gn.xyz);
+			float dither = bayer(gl_FragCoord.st);
 
-    vec4 shadowPosition = getShadowSpace(depth1, texcoord.st);
+			float rotateMult = dither * PI * 2.0;   //Make sure the offset rotates 360 degrees.
 
-    for (int i = 1; i < 8; i++){
-        vec2 offset = (vec2(float(i)) + dither) / 512.0 * 0.5 * rotate(dither * PI * 2.0);
-        offset *= 1.0 + length(offset);
+			mat2 rotationMatrix = rotate(rotateMult);
 
-        vec4 offsetCoord = vec4(shadowPosition.rg + offset, 0.0, 0.0);
-        vec3 lookupCoord = biasedShadows(offsetCoord).xyz;
+			vec4 shadowSpaceNormal = gbufferModelViewInverse * vec4(normal1.xyz, 0.0f);
+					 shadowSpaceNormal = shadowModelView * shadowSpaceNormal;
+					 shadowSpaceNormal.xyz = normalize(shadowSpaceNormal.xyz);
 
-        vec3 normalSample = texture2D(shadowcolor1, lookupCoord.xy).rgb;
-            normalSample.x = -normalSample.x;
-            normalSample.y = -normalSample.y;
+			vec4 shadowPosition = getShadowSpace(depth2, texcoord.st);
+			vec4 biasedShadowPosition = biasedShadows(shadowPosition);
 
-        float depthSample = texture2DLod(shadowtex1, lookupCoord.xy, 2).x;
+			const int GIsteps = 8;
 
-        depthSample = -2.5 + 5.0 * depthSample;
-        vec3 samplePos = vec3(offsetCoord.x, offsetCoord.y, depthSample);
-        vec3 lightVector = normalize(samplePos.xyz - shadowPosition.xyz);
+			vec2 circleDistribution = rotationMatrix * vec2(1.0 + dither) / 16.0 / float(GIsteps);
 
-        float dist = length(samplePos.xyz - shadowPosition.xyz);
+			for (int i = 1; i < GIsteps + 1; i++){
 
-        float dotProduct = max(dot(lightVector * vec3(1.0, 1.0, -1.0), gn.rgb), 0.0);
-        float sampleWeight = mDot(lightVector, normalSample);
+				vec2 offset  = circleDistribution * i;
+						 offset *= 1.0 + flength(offset);
 
-        const float falloffPower = 1.5f;
-        float distanceWeight = (1.0f / (pow(dist * (62260.0f), falloffPower) + 100.1f));
-            distanceWeight *= pow(length(offset), 2.0) * 50000.0 + 1.0;
+				vec4 offsetPosition = vec4(shadowPosition.rg + offset, 0.0, 0.0);
+				vec3 biasedPosition = biasedShadows(offsetPosition).xyz;
 
-        indirectLight += toLinear(shadow2DLod(shadowcolor0, lookupCoord, 4.0).rgb) * sampleWeight * dotProduct * distanceWeight;
+				vec3 normalSample = texture2D(shadowcolor1, biasedPosition.xy).rgb * 2.0 - 1.0;
+						 normalSample.xy = -normalSample.xy;
 
-        weight++;
-    }
-    indirectLight /= weight;
+				float shadow = texture2D(shadowtex1, biasedPosition.xy).x;
+				shadow = -2.5 + 5.0 * (shadow - 0.0);
 
-    return max(indirectLight, 0.0) * 140000.0;
-  }
+				vec3 samplePos = vec3(offsetPosition.xy, shadow);
+
+				vec3 halfVector = samplePos.xyz - shadowPosition.xyz;
+
+				vec3 lPos = normalize(halfVector);
+				float distFromX = length(halfVector);
+				float offsetDistFromX = length(vec3(halfVector.xy, (halfVector.z - 0.01) * 5.0));
+
+				float diffuse = Burley(-normalize(viewSpace), vec3(lPos.xy, -(lPos.z + 0.5)), normalize(shadowSpaceNormal.xyz), 0.9);
+				if (transparent > 0.5) diffuse = 1.0;
+				float sampleWeight = saturate(dot(lPos, normalSample));
+
+				float distanceWeight  = 1.0 / (pow(offsetDistFromX * 20000.0, 1.7) + 5000.0);
+				//      distanceWeight *= pow(length(offset), 2.0);
+
+				indirectLight += toLinear(shadow2DLod(shadowcolor0, biasedPosition, 2.0).rgb) * sampleWeight * diffuse * distanceWeight;
+
+				weight++;
+			}
+			indirectLight /= weight;
+			indirectLight *= 4000000.0;
+
+			return indirectLight * pow(lightmaps1.y, 4.0);
+	}
 #endif
 
 void main() {
@@ -492,7 +505,7 @@ void main() {
 	#endif
 
 	#ifdef GI
-    if (land > 0.5) gi = getGI();
+    if (land > 0.5) gi = getGI(fpos2);
   #endif
 
   if (isnan(color)) color = vec3(0.0);
