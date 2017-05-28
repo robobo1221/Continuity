@@ -103,8 +103,13 @@ float exposure() {
 
 #ifdef FILM_GRAIN
   void filmGrain(inout vec3 color) {
-    vec2 coord = texcoord.st * 2.6 * vec2(aspectRatio, 1.0) + frameTimeCounter * 2.0;
-    color *= mix(0.5 + texture2D(noisetex, coord).r, 1.0, 1.0 - FILM_GRAIN_STRENGTH);
+    vec2 coord = texcoord.st * 7.0 * vec2(aspectRatio, 1.0);
+    vec3 noise  = texture2D(noisetex, coord       - frameTimeCounter * 1.0).rgb;
+         noise += texture2D(noisetex, coord * 0.5 + frameTimeCounter * 2.0).rgb;
+         noise += texture2D(noisetex, coord * 0.2 - frameTimeCounter * 3.0).rgb;
+         noise  = max(noise - 0.5, 0.0);
+         noise  = mix(noise / 3.0, vec3(1.0), 1.0 - FILM_GRAIN_STRENGTH);
+    color *= noise;
   }
 #endif
 
