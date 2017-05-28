@@ -91,7 +91,7 @@ vec3 bokehImage(float lod, vec2 offset) {
 			for (int i = -4; i < 4; i++) {
 				for (int j = -4; j < 4; j++) {
 					float weight = pow(max(1.0 - length(vec2(i, j)) / 4.0, 0.0), 5.0) * 10.0;
-					vec2 bcoord = (texcoord.st - offset + vec2(i, j) * pw * vec2(1.0, aspectRatio)) * scale;
+					vec2 bcoord = (texcoord.st - offset + vec2(i, j) * pw * vec2(4.0, aspectRatio)) * scale;
 
 					if (weight > 0) bloom += toLinear(texture2D(colortex0, bcoord).rgb) * weight;
 					total += weight;
