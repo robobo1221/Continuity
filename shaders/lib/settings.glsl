@@ -56,7 +56,7 @@
 //#define DOF
   //#define HQ_DOF
   //#define TILT_SHIFT
-  #define FSTOP 2.8 //[1.0 1.4 2.0 2.8 4.0 5.6 8.0 11.0 16.0] //The ratio of focal length to diaphram size, for more precise numbers go to lib/settings.glsl and change this number manually.
+  #define FSTOP 2.8 //[0.5 0.7 1.0 1.4 2.0 2.8 4.0 5.6 8.0 11.0 16.0] //The ratio of focal length to diaphram size, for more precise numbers go to lib/settings.glsl and change this number manually.
   #define ITERATIONS 128
   #define DISTORTION_ANAMORPHIC	1.0
   #define DISTORTION_BARREL 0.6
