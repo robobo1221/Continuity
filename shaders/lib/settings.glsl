@@ -1,4 +1,4 @@
-#define SHADOW_BIAS 0.85
+#define SHADOW_BIAS 0.85 //[0.00 0.60 0.70 0.80 0.85 0.90] Higher Value = better Shadow Quality closer to the Player
 
 #define WAVING_TERRAIN
 
