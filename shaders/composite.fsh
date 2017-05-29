@@ -26,8 +26,8 @@ const int 		noiseTextureResolution  = 512;
 
 // Shadow Settings
 const bool 		shadowHardwareFiltering = false;
-const int		  shadowMapResolution		  = 2048;
-const float 	shadowDistance 			    = 240.0;
+const int		  shadowMapResolution		  = 2048; //[512 1024 2048 4092 8192 16368]
+const float 	shadowDistance 			    = 240.0; //[120 180 240 300 360]
 
 const bool 		shadowcolor0Mipmap = true;
 const bool 		shadowcolor0Nearest = false;
