@@ -434,11 +434,11 @@ float getShadows(in vec3 fpos) {
 			vec4 shadowPosition = getShadowSpace(depth2, texcoord.st);
 			vec4 biasedShadowPosition = biasedShadows(shadowPosition);
 
-			const int GIsteps = 8;
+			const float GIsteps = 1.0 / 8.0;
 
-			vec2 circleDistribution = rotationMatrix * vec2(1.0 + dither) / 16.0 / float(GIsteps);
+			vec2 circleDistribution = rotationMatrix * vec2(1.0 + dither) / 32.0;
 
-			for (int i = 1; i < GIsteps + 1; i++){
+			for (float i = 1.0; i < 2.0; i += GIsteps){
 
 				vec2 offset  = circleDistribution * i;
 						 offset *= 1.0 + flength(offset);
