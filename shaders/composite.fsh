@@ -472,7 +472,7 @@ float getShadows(in vec3 fpos) {
 				weight++;
 			}
 			indirectLight /= weight;
-			indirectLight *= 4000000.0;
+			indirectLight *= 40000000.0;
 
 			return indirectLight * pow(lightmaps1.y, 4.0);
 	}
